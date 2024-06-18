@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import "../styles/AreaCoverList.css";
 
 function ParcelList(props) {

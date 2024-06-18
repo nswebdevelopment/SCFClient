@@ -1,0 +1,38 @@
+/* ParcelList.css */
+
+.list-item::before {
+    content: " ";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .list-item.trees::before { background-color: #1A6401; }
+  .list-item.shrubland::before { background-color: #F9BA00; }
+  .list-item.grassland::before { background-color: #028361; }
+  .list-item.cropland::before { background-color: #444; }
+  .list-item.built::before { background-color: #888; }
+  .list-item.bare::before { background-color: #B4B4B4; }
+  .list-item.snow::before { background-color: #F0F0F0; }
+  .list-item.permanent::before { background-color: #2565CB; }
+  .list-item.herbaceous::before { background-color: #3096A1; }
+  .list-item.mangroves::before { background-color: #43CF71; }
+  .list-item.moss::before { background-color: #F8E69D; }
+
+
+
+  /* const landCoverColors = ee.Dictionary({
+    10: '#006400', // DarkGreen for Trees
+    20: '#8B4513', // SaddleBrown for Shrubland
+    30: '#ADFF2F', // GreenYellow for Grassland
+    40: '#FFD700', // Gold for Cropland
+    50: '#A9A9A9', // DarkGray for Built-up
+    60: '#808080', // Gray for Bare / Sparse vegetation
+    70: '#FFFFFF', // White for Snow and ice
+    80: '#0000FF', // Blue for Permanent water bodies
+    90: '#228B22', // ForestGreen for Herbaceous wetland
+    95: '#008000', // Green for Mangroves
+    100: '#00FF00' // Lime for Moss and lichen
+  }); */

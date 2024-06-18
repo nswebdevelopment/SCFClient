@@ -212,6 +212,7 @@ function Map(props) {
 
           console.log("body:",  JSON.stringify({ lngLatArray, types }));
 
+          console.log("Sending request to server to get world cover types...", baseUrl + "/api/getWorldCoverTypes");
           fetch(baseUrl + "/api/getWorldCoverTypes", {
             method: "POST",
             headers: {

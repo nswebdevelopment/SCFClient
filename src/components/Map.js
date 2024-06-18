@@ -60,7 +60,6 @@ function Map(props) {
 
 
 
-
   }, [map]);
 
 

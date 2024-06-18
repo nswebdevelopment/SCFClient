@@ -36,14 +36,14 @@ function ParcelList(props) {
                 parcel.areas.map((area) => {
                   const areaCovered = area["area"];
 
-                  const landCoverName = area["land_cover_name"];
+                  // const landCoverName = area["land_cover_name"];
                   const landCoverColor = area["color"];
                   // const landCoverColor = 'red';
-                  const firstWord = landCoverName.split(/\b/)[0];
+                  // const firstWord = landCoverName.split(/\b/)[0];
 
-                  const className = `list-item ${firstWord
-                    .toLowerCase()
-                    .replace(/ /g, "-")}`;
+                  // const className = `list-item ${firstWord
+                  //   .toLowerCase()
+                  //   .replace(/ /g, "-")}`;
 
 
                   const percentage = ((areaCovered / parcel.totalArea) * 100).toFixed(2);

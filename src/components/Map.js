@@ -3,7 +3,7 @@ import { GoogleMap, LoadScript, DrawingManager } from "@react-google-maps/api";
 import Parcel from "../models/Parcel";
 import { useModal } from "./SaveParcelModal";
 import FullScreenLoader from "./Loader";
-import MapUtils from "../utils/map_utils";
+import MapUtils from "../utils/mapUtils";
 
 const containerStyle = {
   flex: 1,
@@ -32,15 +32,15 @@ function Map(props) {
 
   const { openModal } = useModal();
 
-  const clearOverlays = React.useCallback(() => {
-    if (map?.overlayMapTypes) {
-      while (map.overlayMapTypes.getLength() > 0) {
-        map.overlayMapTypes.removeAt(0);
-      }
-    } else {
-      console.log("Map is not defined or not a Google Maps object");
-    }
-  }, [map]);
+  // const clearOverlays = React.useCallback(() => {
+  //   if (map?.overlayMapTypes) {
+  //     while (map.overlayMapTypes.getLength() > 0) {
+  //       map.overlayMapTypes.removeAt(0);
+  //     }
+  //   } else {
+  //     console.log("Map is not defined or not a Google Maps object");
+  //   }
+  // }, [map]);
 
 
   const addOverlaysForParcel = React.useCallback((parcel) => {
@@ -65,12 +65,12 @@ function Map(props) {
 
 
 
-  const addOverlays = React.useCallback(() => {
-    clearOverlays();
-    for(const parcel of props.parcels){
-      addOverlaysForParcel(parcel);
-    }
-  }, [props.parcels, clearOverlays, addOverlaysForParcel]);
+  // const addOverlays = React.useCallback(() => {
+  //   clearOverlays();
+  //   for(const parcel of props.parcels){
+  //     addOverlaysForParcel(parcel);
+  //   }
+  // }, [props.parcels, clearOverlays, addOverlaysForParcel]);
 
 
   const onLoad = React.useCallback(function callback(map) {

@@ -1,4 +1,8 @@
 
+const baseUrl = process.env.NODE_ENV === 'production' ? 'https://scfserver.onrender.com' : '';
+
+
+
 const landCoverNames = {
   10: "Trees",
   20: "Shrubland",
@@ -14,5 +18,5 @@ const landCoverNames = {
 };
 
   module.exports = {
-   landCoverNames
+   landCoverNames, baseUrl
   };

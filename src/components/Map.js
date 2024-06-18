@@ -4,6 +4,7 @@ import Parcel from "../models/Parcel";
 import { useModal } from "./SaveParcelModal";
 import FullScreenLoader from "./Loader";
 import MapUtils from "../utils/mapUtils";
+import { baseUrl } from "../utils/constants"; 
 
 const containerStyle = {
   flex: 1,
@@ -211,7 +212,7 @@ function Map(props) {
 
           console.log("body:",  JSON.stringify({ lngLatArray, types }));
 
-          fetch("https://scfserver.onrender.com/api/getWorldCoverTypes", {
+          fetch(baseUrl + "/api/getWorldCoverTypes", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

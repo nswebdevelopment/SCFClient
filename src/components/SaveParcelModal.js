@@ -75,10 +75,10 @@ export function ModalProvider({ children }) {
               type="text"
               placeholder="Parcel description"
               id="parcelDescription"
-              style={{ marginBottom: "10px" }}
+              style={{ marginBottom: "20px" }}
             />
 
-            <div>
+            <div style={{ marginBottom: "10px" }}>
               {Object.entries(landCoverNames).map(([key, value]) => (
                 <div key={key}>
                   <input

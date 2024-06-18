@@ -284,17 +284,28 @@ function Map(props) {
   parcelsRef.current = props.parcels;
 
 
-  useEffect(() => {
-    const exportButton = document.getElementById('exportButton');
-    if (exportButton) {
-      exportButton.addEventListener('click', function() {
-        if (parcelsRef.current) {
-          MapUtils.exportToKML(parcelsRef.current);
-        }
-      });
-    }
-  }, []); 
+  // useEffect(() => {
+  //   const exportButton = document.getElementById('exportButton');
+  //   if (exportButton) {
+  //     exportButton.addEventListener('click', function() {
+       
+  //       if (parcelsRef.current) {
+        
+  //         MapUtils.exportToKML(parcelsRef.current);
+  //       }
+  //     });
+  //   }
+  // }, []); 
 
+
+  const exportToKml = () => {
+    // Your KML export logic here
+    console.log('Export to KML button clicked', props.parcels.length);
+    if(props.parcels.length === 0){
+    return;
+    }
+    MapUtils.exportToKML(props.parcels);
+  };
 
 
   return (
@@ -368,7 +379,7 @@ function Map(props) {
 
           
         </GoogleMap>
-        <button style = {exportButton} id="exportButton">Export to KML</button>
+        <button style = {exportButton} id="exportButton" onClick={exportToKml}  disabled={props.parcels.length === 0}>Export to KML</button>
       </LoadScript>
     </div>
   );

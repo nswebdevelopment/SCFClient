@@ -211,7 +211,7 @@ function Map(props) {
 
           console.log("body:",  JSON.stringify({ lngLatArray, types }));
 
-          fetch("/api/getWorldCoverTypes", {
+          fetch("https://scfserver.onrender.com/api/getWorldCoverTypes", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

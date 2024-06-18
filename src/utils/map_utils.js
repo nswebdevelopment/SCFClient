@@ -8,7 +8,7 @@ class MapUtils {
     parcels.forEach((parcel) => {
       kml += MapUtils.convertShapeToKML(parcel.polygon);
     });
-    kml += "</Document>\n" + "</kml>";
+    kml += "</Document>\n</kml>";
 
     MapUtils.download("map.kml", kml);
   }

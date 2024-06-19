@@ -44,7 +44,7 @@ function Home() {
           right: 0, // Stretch to the right
           top: 80, // Start from the top
           bottom: 0, // Stretch to the bottom
-          backgroundColor: 'blue', // Set the background color to blue
+          backgroundColor: 'white', // Set the background color to blue
           overflow: 'hidden' // Hide the overflowing content
         },
       };

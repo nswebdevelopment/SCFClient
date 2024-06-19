@@ -4,24 +4,28 @@ import Parcel from "../models/Parcel";
 import { useModal } from "./SaveParcelModal";
 import FullScreenLoader from "./Loader";
 import MapUtils from "../utils/mapUtils";
-import { baseUrl } from "../utils/constants"; 
+import { baseUrl } from "../utils/constants";
 
 const containerStyle = {
   flex: 1,
   height: "calc(100vh - 80px)",
   top: 0,
-  position: 'relative'
+  position: "relative",
 };
 
 const exportButton = {
-  position: 'absolute',
-  top: '10px',
-  right: '10px'
+  position: "absolute",
+  top: "10px",
+  right: "10px",
+};
+
+const soilToggleButton = {
+  position: "absolute",
+  top: "50px",
+  right: "10px",
 };
 
 const center = { lat: 45.2671, lng: 19.8335 };
-
-
 
 function Map(props) {
   const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
@@ -33,37 +37,24 @@ function Map(props) {
 
   const { openModal } = useModal();
 
-  // const clearOverlays = React.useCallback(() => {
-  //   if (map?.overlayMapTypes) {
-  //     while (map.overlayMapTypes.getLength() > 0) {
-  //       map.overlayMapTypes.removeAt(0);
-  //     }
-  //   } else {
-  //     console.log("Map is not defined or not a Google Maps object");
-  //   }
-  // }, [map]);
+  const [showSoil, setShowSoil] = useState(true);
+  const [soilUrl, setSoilUrl] = useState('');
 
-
-  const addOverlaysForParcel = React.useCallback((parcel) => {
-
+  const addOverlaysForParcel = React.useCallback(
+    (parcel) => {
       const imageMapType = getImageMapType(parcel.imageUrl);
       // const imageMapTypeGrassland = getImageMapType(parcel.grasslandImageUrl);
       // const imageMapTypeCropland = getImageMapType(parcel.croplandImageUrl);
-      
+
       // const imageMapTypeForest = getImageMapType(parcel.forrestImageUrl);
 
       map.overlayMapTypes.push(imageMapType);
       // map.overlayMapTypes.push(imageMapTypeGrassland);
       // map.overlayMapTypes.push(imageMapTypeCropland);
       // map.overlayMapTypes.push(imageMapTypeForest);
-
-
-
-
-
-  }, [map]);
-
-
+    },
+    [map]
+  );
 
   // const addOverlays = React.useCallback(() => {
   //   clearOverlays();
@@ -72,14 +63,12 @@ function Map(props) {
   //   }
   // }, [props.parcels, clearOverlays, addOverlaysForParcel]);
 
-
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
     setLoaded(true);
 
     map.setMapTypeId(window.google.maps.MapTypeId.SATELLITE);
 
-  
     // Hide labels
     map.setOptions({
       styles: [
@@ -93,12 +82,73 @@ function Map(props) {
       // mapTypeControlOptions: {
       //   mapTypeIds: ["roadmap", "satellite"],
       // },
-      
+
       fullscreenControl: false, // Disable fullscreen control
     });
-
+    loadSoilData();
     console.log("Google Maps API has loaded");
   }, []);
+
+  function loadSoilData() {
+    fetch(baseUrl + "/api/getSoilData")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Soil data:", data["soc_100_200cm"]);
+        setSoilUrl(data["soc_100_200cm"]);
+      });
+  }
+
+  // function showSoilLayer() {
+    
+  //   console.log("Showing soil layer", soilUrl);
+  //   if(showSoil && map){
+  //     console.log("Adding soil layer to map", soilUrl);
+  //     const soilLayer = getImageMapType(soilUrl);
+  //     map.overlayMapTypes.push(soilLayer);
+
+  //   }
+  // }
+
+
+  useEffect(() => {
+    if (soilUrl && showSoil && map) {
+      console.log("Adding soil layer to map", soilUrl);
+      const soilLayer = getImageMapType(soilUrl);
+      // map.overlayMapTypes.push(soilLayer);
+
+        // Shift up all existing overlays
+    for (let i = map.overlayMapTypes.getLength() - 1; i >= 0; i--) {
+      const overlay = map.overlayMapTypes.getAt(i);
+      map.overlayMapTypes.setAt(i + 1, overlay);
+    }
+      map.overlayMapTypes.setAt(0, soilLayer);
+
+    }
+  }, [soilUrl, showSoil, map]);
+
+  function toggleSoilLayer() {
+    console.log("Toggling soil layer");
+    setShowSoil(prevState => !prevState);
+   
+    if(showSoil && map){
+      // console.log("Removing soil layer from map");
+
+      // map.overlayMapTypes.removeAt(0)
+      // // Remove the soil layer at its index
+
+
+      const soilLayer = getImageMapType(soilUrl, 0.0);
+      // map.overlayMapTypes.push(soilLayer);
+
+        // Shift up all existing overlays
+    // for (let i = map.overlayMapTypes.getLength() - 1; i >= 0; i--) {
+    //   const overlay = map.overlayMapTypes.getAt(i);
+    //   map.overlayMapTypes.setAt(i + 1, overlay);
+    // }
+      map.overlayMapTypes.setAt(0, soilLayer);
+    }
+    
+  }
 
   const onUnmount = React.useCallback(function callback(map) {
     setMap(null);
@@ -110,8 +160,6 @@ function Map(props) {
     }
   }, [loaded]);
 
-
-
   useEffect(() => {
     if (props.selectedParcel && map) {
       const shape = props.selectedParcel.polygon;
@@ -119,11 +167,8 @@ function Map(props) {
 
       // map.zoom = 13;
       map.panTo(bounds.getCenter());
-
-     
     }
   }, [props.selectedParcel, map]);
-
 
   function getBoundsOfShape(shape) {
     if (shape.getBounds) {
@@ -174,7 +219,7 @@ function Map(props) {
     return null;
   }
 
-  function getImageMapType(urlFormat) {
+  function getImageMapType(urlFormat, opacity = 1.0) {
     return new window.google.maps.ImageMapType({
       getTileUrl: function (tile, zoom) {
         return urlFormat
@@ -184,19 +229,20 @@ function Map(props) {
       },
       tileSize: new window.google.maps.Size(256, 256),
       name: "Clipped Image",
+      opacity: opacity,
     });
   }
 
   function handlePolygonComplete(polygon) {
     openModal(
-      `Parcel No. ${(props.parcels.length + 1).toString().padStart(5, '0')}`,
+      `Parcel No. ${(props.parcels.length + 1).toString().padStart(5, "0")}`,
       (parcel) => {
         // Save the parcel with the entered name and description
         if (parcel && parcel.selectedTypes.length > 0) {
           setIsCreatingPolygon(true);
           // Access the vertices of the polygon
           const vertices = getVertices(polygon);
-          
+
           const area =
             window.google.maps.geometry.spherical.computeArea(vertices);
           const lngLatArray = [];
@@ -207,12 +253,15 @@ function Map(props) {
           vertices.forEach((vertex) => {
             console.log({ lat: vertex.lat(), lng: vertex.lng() });
             lngLatArray.push([vertex.lng(), vertex.lat()]);
-            latLngArray.push([vertex.lat(), vertex.lng() ]);
+            latLngArray.push([vertex.lat(), vertex.lng()]);
           });
 
-          console.log("body:",  JSON.stringify({ lngLatArray, types }));
+          console.log("body:", JSON.stringify({ lngLatArray, types }));
 
-          console.log("Sending request to server to get world cover types...", baseUrl + "/api/getWorldCoverTypes");
+          console.log(
+            "Sending request to server to get world cover types...",
+            baseUrl + "/api/getWorldCoverTypes"
+          );
           fetch(baseUrl + "/api/getWorldCoverTypes", {
             method: "POST",
             headers: {
@@ -238,16 +287,14 @@ function Map(props) {
                 data["parcelArea"],
                 data["totalArea"]
               );
-              props.addParcel((prevParcels) => [
-                ...prevParcels,
-                newParcel
-                ,
-              ]);
-              console.log("Modal closed and parcel saved.", props.parcels.length);
-            
+              props.addParcel((prevParcels) => [...prevParcels, newParcel]);
+              console.log(
+                "Modal closed and parcel saved.",
+                props.parcels.length
+              );
+
               addOverlaysForParcel(newParcel, map);
               setIsCreatingPolygon(false);
-
             });
           return;
         }
@@ -265,12 +312,11 @@ function Map(props) {
 
   // useEffect(() => {
   //   if (props.selectedParcel) {
-  
+
   //     clearOverlays();
   //     addOverlaysForParcel(props.selectedParcel);
   //   }
   // }, [props.selectedParcel, props.parcels, addOverlaysForParcel, clearOverlays]);
-
 
   function drawPolygonsOnMap(parcel) {
     parcel.polygon.setMap(map);
@@ -279,34 +325,30 @@ function Map(props) {
     });
   }
 
-
   const parcelsRef = useRef();
   parcelsRef.current = props.parcels;
-
 
   // useEffect(() => {
   //   const exportButton = document.getElementById('exportButton');
   //   if (exportButton) {
   //     exportButton.addEventListener('click', function() {
-       
+
   //       if (parcelsRef.current) {
-        
+
   //         MapUtils.exportToKML(parcelsRef.current);
   //       }
   //     });
   //   }
-  // }, []); 
-
+  // }, []);
 
   const exportToKml = () => {
     // Your KML export logic here
-    console.log('Export to KML button clicked', props.parcels.length);
-    if(props.parcels.length === 0){
-    return;
+    console.log("Export to KML button clicked", props.parcels.length);
+    if (props.parcels.length === 0) {
+      return;
     }
     MapUtils.exportToKML(props.parcels);
   };
-
 
   return (
     <div style={containerStyle}>
@@ -376,10 +418,18 @@ function Map(props) {
               onRectangleComplete={handlePolygonComplete}
             />
           )}
-
-          
         </GoogleMap>
-        <button style = {exportButton} id="exportButton" onClick={exportToKml}  disabled={props.parcels.length === 0}>Export to KML</button>
+        <button
+          style={exportButton}
+          id="exportButton"
+          onClick={exportToKml}
+          disabled={props.parcels.length === 0}
+        >
+          Export to KML
+        </button>
+        <button onClick={toggleSoilLayer} style={soilToggleButton}>
+          {showSoil ? "Hide" : "Show"} Soil Layer
+        </button>
       </LoadScript>
     </div>
   );

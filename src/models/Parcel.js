@@ -1,5 +1,5 @@
 class Parcel {
-  constructor(id, name, desc, area, polygon, imageUrl, grasslandImageUrl, croplandImageUrl, forrestImageUrl, areas, parcelArea, totalArea) {
+  constructor(id, name, desc, area, polygon, imageUrl, grasslandImageUrl, croplandImageUrl, forrestImageUrl, areas, parcelArea, totalArea, coverTypes) {
     this.id = id;
     this.name = name;
     this.desc = desc;
@@ -12,6 +12,7 @@ class Parcel {
     this.areas = areas;
     this.totalArea = totalArea;
     this.parcelArea = parcelArea;
+    this.coverTypes = coverTypes;
   }
 }
 

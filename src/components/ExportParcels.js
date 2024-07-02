@@ -2,26 +2,19 @@ import React, { useState, useContext } from "react";
 
 export const ModalContext = React.createContext();
 
-export function ModalProvider({ children }) {
+export function ExportParcelsModal({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [onSave, setOnSave] = useState(() => () => {});
   const [onCancel, setOnCancel] = useState(() => () => {});
-
-  const [parcelName, setParcelName] = useState("");
-  const [parcelDesc, setParcelDesc] = useState("");
   // const landCoverTypes = ['Forest', 'Grassland', 'Wetland', 'Urban', 'Agriculture'];
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [parcels, setParcels] = useState([]);
+  const [selectedParcels, setSelectedParcels] = useState([]);
 
-  const { landCoverNames } = require("../utils/constants");
-
-  const openModal = (initialName, initialDesc = '', types = [], saveCallback, cancelCallback) => {
+  const openExportModal = (parcels, saveCallback, cancelCallback) => {
     setIsOpen(true);
     setOnSave(() => saveCallback);
     setOnCancel(() => cancelCallback);
-    setParcelName(initialName);
-    setParcelDesc(initialDesc);
-    setSelectedTypes(types);
-    console.log("Modal opened", types);
+    setParcels(parcels);
   };
 
   
@@ -29,7 +22,7 @@ export function ModalProvider({ children }) {
     setIsOpen(false);
     setOnSave(() => () => {});
     setOnCancel(() => () => {});
-    setSelectedTypes([]);
+    setParcels([]);
     console.log("Modal closed");
   };
 
@@ -38,7 +31,7 @@ export function ModalProvider({ children }) {
     onCancel();
     setOnSave(() => () => {});
     setOnCancel(() => () => {});
-    setSelectedTypes([]);
+    setParcels([]);
     console.log("Modal cancelled");
   };
 
@@ -47,16 +40,16 @@ export function ModalProvider({ children }) {
   const handleSelectAllChange = (e) => {
     setSelectAll(e.target.checked);
     if (e.target.checked) {
-      setSelectedTypes(
-        Object.keys(landCoverNames).map((key) => parseInt(key, 0))
+      setSelectedParcels(
+        Object.keys(parcels).map((key) => parseInt(key, 0))
       );
     } else {
-      setSelectedTypes([]);
+      setSelectedParcels([]);
     }
   };
 
   return (
-    <ModalContext.Provider value={{ openModal }}>
+    <ModalContext.Provider value={{ openExportModal }}>
       {children}
       {isOpen && (
         <div
@@ -81,22 +74,7 @@ export function ModalProvider({ children }) {
               alignItems: "center",
             }}
           >
-            <input
-              type="text"
-              placeholder="Parcel name"
-              value={parcelName}
-              id="parcelName"
-              style={{ marginBottom: "10px" }}
-              onChange={(e) => setParcelName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Parcel description"
-              value={parcelDesc}
-              id="parcelDescription"
-              style={{ marginBottom: "20px" }}
-              onChange={(e) => setParcelDesc(e.target.value)}
-            />
+
 
             <div style={{ marginBottom: "10px" }}>
               <div>
@@ -111,7 +89,7 @@ export function ModalProvider({ children }) {
                 <label htmlFor="all">All</label>
               </div>
 
-              {Object.entries(landCoverNames).map(([key, value]) => (
+              {Object.entries(parcels).map(([key, value]) => (
                 <div key={key}>
                   <input
                     type="checkbox"
@@ -119,23 +97,23 @@ export function ModalProvider({ children }) {
                     name={value}
                     value={value}
                     checked={
-                      selectAll || selectedTypes.includes(parseInt(key, 0))
+                      selectAll || selectedParcels.includes(parseInt(key, 0))
                     }
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedTypes((prevTypes) => [
+                        setSelectedParcels((prevTypes) => [
                           ...prevTypes,
                           parseInt(key, 0),
                         ]);
                       } else {
-                        setSelectedTypes((prevTypes) =>
+                        setSelectedParcels((prevTypes) =>
                           prevTypes.filter((t) => t !== parseInt(key, 0))
                         );
                         setSelectAll(false);
                       }
                     }}
                   />
-                  <label htmlFor={value}>{value}</label>
+                  <label htmlFor={value}>{value.name}</label>
                 </div>
               ))}
             </div>
@@ -149,14 +127,14 @@ export function ModalProvider({ children }) {
               <button
                 onClick={() => {
                   onSave({
-                    name: document.getElementById("parcelName").value,
-                    desc: document.getElementById("parcelDescription").value,
-                    selectedTypes: selectedTypes,
+                    parcels: parcels.filter((parcel, index) =>
+                      selectedParcels.includes(index)
+                    ),
                   });
                   closeModal();
                 }}
               >
-                Save
+                Export
               </button>
               <button onClick={cancelModal}>Cancel</button>
             </div>
@@ -167,6 +145,6 @@ export function ModalProvider({ children }) {
   );
 }
 
-export function useModal() {
+export function useExportModal() {
   return useContext(ModalContext);
 }

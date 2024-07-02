@@ -1,38 +1,39 @@
-
 import "../styles/AreaCoverList.css";
 
 function ParcelList(props) {
-  
   return (
     <div style={listStyle}>
       {props.parcels.map((parcel) => {
-  
-      
-   
-
         return (
-          <div key={parcel.id} style={itemStyle}  onClick={() => props.setSelectedParcel(parcel)}>
-          
-              <h2 style={titleStyle}>{parcel.name}</h2>
-           
+          <div
+            key={parcel.id}
+            style={itemStyle}
+            onClick={() => props.setSelectedParcel(parcel)}
+          >
+            <h2 style={titleStyle}>{parcel.name}</h2>
 
             <i style={descStyle}>{parcel.desc}</i>
             <p
               style={areaStyle}
               dangerouslySetInnerHTML={{
-                __html: `Parcel Area: ${(parcel.parcelArea / 10000).toFixed(2)}ha`,
+                __html: `Parcel Area: ${(parcel.parcelArea / 10000).toFixed(
+                  2
+                )}ha`,
               }}
             />
-             <p
+            <p
               style={areaStyle}
               dangerouslySetInnerHTML={{
-                __html: `Total Area: ${(parcel.totalArea / 10000).toFixed(2)}ha`,
+                __html: `Total Area: ${(parcel.totalArea / 10000).toFixed(
+                  2
+                )}ha`,
               }}
             />
 
             <ul>
-              
-              {(props.selectedParcel? props.selectedParcel.id === parcel.id: false) &&
+              {(props.selectedParcel
+                ? props.selectedParcel.id === parcel.id
+                : false) &&
                 parcel.areas.map((area) => {
                   const areaCovered = area["area"];
 
@@ -45,14 +46,16 @@ function ParcelList(props) {
                   //   .toLowerCase()
                   //   .replace(/ /g, "-")}`;
 
-
-                  const percentage = ((areaCovered / parcel.totalArea) * 100).toFixed(2);
+                  const percentage = (
+                    (areaCovered / parcel.totalArea) *
+                    100
+                  ).toFixed(2);
                   return (
                     <li
-                    style={areasStyle}
-                    key={area["land_cover_name"]}
-                    dangerouslySetInnerHTML={{
-                      __html: `
+                      style={areasStyle}
+                      key={area["land_cover_name"]}
+                      dangerouslySetInnerHTML={{
+                        __html: `
                         <div style="
                           width: 10px;
                           height: 10px;
@@ -62,15 +65,24 @@ function ParcelList(props) {
                           margin-right: 5px;
                         "></div>
                         ${area["land_cover_name"]}(${percentage}%): ${(
-                        areaCovered / 10000
-                      ).toFixed(2)}ha`,
-                    }}
-                  />
+                          areaCovered / 10000
+                        ).toFixed(2)}ha`,
+                      }}
+                    />
                   );
                 })}
             </ul>
+            {(props.selectedParcel
+                ? props.selectedParcel.id === parcel.id
+                : false) && (
+              <button onClick={() => {
+              
+                props.setEditParcel(props.selectedParcel);
+              }}>
+                Edit Parcel
+              </button>
+            )}
           </div>
-          
         );
       })}
     </div>

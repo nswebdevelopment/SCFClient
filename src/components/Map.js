@@ -783,13 +783,14 @@ const searchLocation  = () => {
 
           <input
             type="number"
-            value={lat}
+    
+          
             onChange={(e) => setLat(e.target.value)}
             placeholder="Latitude"
           />
           <input
             type="number"
-            value={lng}
+          
             onChange={(e) => setLng(e.target.value)}
             placeholder="Longitude"
           />

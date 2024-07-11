@@ -1,4 +1,4 @@
-@import './Color.css';
+@import '../../styles/Color.css';
 
 .project-container {
     display: grid;

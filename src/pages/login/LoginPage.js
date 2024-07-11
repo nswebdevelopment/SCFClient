@@ -1,13 +1,12 @@
 import React, { useState }  from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/scf_logo.png'; // replace 'yourLogo.png' with your actual file name
-import api from "../api/api";
+import logo from '../../assets/scf_logo.png'; // replace 'yourLogo.png' with your actual file name
+import api from "../../api/api";
 
 
 function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
-  const[value, setValue]  = useState(0);
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -22,7 +21,6 @@ function LoginPage() {
       console.error("Error:", error);
       // If login fails, you can show an error message here
       setError('Invalid username or password');
-      
     });
   };
 
@@ -42,14 +40,6 @@ function LoginPage() {
         {error && <p className='error'>{error}</p>}
         <input type="submit" value="Submit" />
       </form>
-
-      {/* <button onClick={() => {
-        api.getUserDetails(value).then((data) => {
-          // console.log("getUserDetails", data);
-         });
-
-         setValue(value + 1);
-      }}>GET USER</button> */}
     </div>
   );
 }

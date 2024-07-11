@@ -8,7 +8,7 @@ import {
 import Parcel from "../models/Parcel";
 import { useModal } from "./SaveParcelModal";
 import { useExportModal } from "./ExportParcels";
-import FullScreenLoader from "./Loader";
+import FullScreenLoader from "../components/loader/Loader";
 import MapUtils from "../utils/mapUtils";
 import { baseUrl } from "../utils/constants";
 import mapStyle from "../styles/MapStyles";

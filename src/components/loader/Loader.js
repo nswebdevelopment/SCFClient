@@ -1,5 +1,5 @@
 import {ThreeDots} from 'react-loader-spinner';
-import '../styles/Loader.css';
+import './Loader.css';
 
 // FullScreenLoader component
 function FullScreenLoader() {

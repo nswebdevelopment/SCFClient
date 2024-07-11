@@ -1,15 +1,15 @@
 
 import './styles/App.css';
 import React from 'react';
-import Navbar from './components/Navbar';
+import Navbar from './components/navigation/Navbar';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import Projects from './pages/ProjectManager';
+import HomePage from './pages/home/HomePage';
+import Projects from './pages/projects/ProjectManager';
 import ParcelManager from './pages/ParcelManager';
-import LoginPage from './pages/LoginPage';
-import TeamPage from './pages/TeamPage';
-import SupportPage from './pages/SupportPage';
+import LoginPage from './pages/login/LoginPage';
+import TeamPage from './pages/team/TeamPage';
+import SupportPage from './pages/support/SupportPage';
 
 
 function App() {

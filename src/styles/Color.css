@@ -1,0 +1,12 @@
+:root {
+    --primary: #9CC0B1;
+    --primary-hover: #8dab8e;
+    --secondary: #8dab8e;
+    --success: #28A745;
+    --danger: #d5727c;
+    --danger-hover: #d6878f;
+    --warning: #FFC107;
+    --info: #17A2B8;
+    --light: #F8F9FA;
+    --dark: #343A40;
+  }

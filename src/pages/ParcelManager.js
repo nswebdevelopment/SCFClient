@@ -1,14 +1,28 @@
-import "../App.css";
 import React, { useState, useEffect } from "react";
 import ParcelList from "../components/ParcelList";
 import { ModalProvider } from "../components/SaveParcelModal";
 import Map from "../components/Map";
 import { ExportParcelsModal } from "../components/ExportParcels";
+import { useLocation } from 'react-router-dom';
+import  api  from '../api/api';
 
-function Home() {
+
+function ParcelManager() {
+  const location = useLocation();
+  const [parcelsOfProject, setParcelsOfProject] = useState(null);
+
+  // console.log("MapPage props", location.state.data);
+  useEffect(() => {
+    if (location.state) {
+      setParcelsOfProject(location.state.data);
+    }
+  }, [location.state]);
+
   const [parcels, addParcel] = useState([]);
+
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [editParcel, setEditParcel] = useState(null);
+  const [removedParcel, setRemovedParcel] = useState(null);
 
   useEffect(() => {
     if (selectedParcel) {
@@ -41,12 +55,14 @@ function Home() {
         <ExportParcelsModal>
           <ModalProvider>
             <Map
+            parcelsOfProject = {parcelsOfProject}
               parcels={parcels}
               addParcel={addParcel}
               selectedParcel={selectedParcel}
               setSelectedParcel={setSelectedParcel}
               editParcel={editParcel}
               setEditParcel={setEditParcel}
+              removedParcel={removedParcel}
             />
           </ModalProvider>
         </ExportParcelsModal>
@@ -55,6 +71,17 @@ function Home() {
           setSelectedParcel={setSelectedParcel}
           selectedParcel={selectedParcel}
           setEditParcel={setEditParcel}
+          removeParcel={(parcel) => {
+
+            api.removeParcel(parcelsOfProject, parcel).then((res) => {
+              setRemovedParcel(parcel);
+              // parcel.polygon.setMap(null);
+              // const newParcels = parcels.filter((p) => p !== parcel);
+              // addParcel(newParcels);
+
+            });
+           
+          }}
         />
       </div>
     </div>
@@ -73,14 +100,4 @@ const styles = {
   },
 };
 
-// function Home() {
-//   return (
-//     <div className='home' style={styles.container}>
-
-//         <h1>Home</h1>
-
-//     </div>
-//   );
-// }
-
-export default Home;
+export default ParcelManager;

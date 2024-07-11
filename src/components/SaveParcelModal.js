@@ -79,6 +79,7 @@ export function ModalProvider({ children }) {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+        
             }}
           >
             <input
@@ -99,7 +100,7 @@ export function ModalProvider({ children }) {
             />
 
             <div style={{ marginBottom: "10px" }}>
-              <div>
+            <div  style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
                 <input
                   type="checkbox"
                   id="all"
@@ -112,7 +113,7 @@ export function ModalProvider({ children }) {
               </div>
 
               {Object.entries(landCoverNames).map(([key, value]) => (
-                <div key={key}>
+                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
                   <input
                     type="checkbox"
                     id={key}
@@ -147,6 +148,7 @@ export function ModalProvider({ children }) {
               }}
             >
               <button
+         
                 onClick={() => {
                   onSave({
                     name: document.getElementById("parcelName").value,
@@ -159,6 +161,7 @@ export function ModalProvider({ children }) {
                 Save
               </button>
               <button onClick={cancelModal}>Cancel</button>
+
             </div>
           </div>
         </div>

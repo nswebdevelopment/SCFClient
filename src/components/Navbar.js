@@ -6,7 +6,7 @@ import { SidebarData } from './SidebarData';
 import '../styles/Navbar.css';
 import { IconContext } from 'react-icons';
 import logo from '../assets/scf_logo.png'; // replace 'yourLogo.png' with your actual file name
-
+import '../styles/App.css';
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);

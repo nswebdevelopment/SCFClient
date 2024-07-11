@@ -93,6 +93,101 @@ class MapUtils {
 
     document.body.removeChild(element);
   }
+
+  static initialCenter = { lat: 0, lng: 0 };
+  static initialZoom = 2;
+
+  static centerToCurrentLocation(map) {
+    if (navigator.geolocation && map) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.updateCenter(map, position.coords.latitude, position.coords.longitude);
+        
+      });
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
+  }
+
+  static updateCenter(map, lat, lng) {
+    map.setZoom(10);
+    map.panTo({ lat: parseFloat(lat), lng: parseFloat(lng) });
+ 
+  }
+
+  static drawPolygonsOnMap(map, parcel, callback) {
+    if(map === null || parcel === null) return;
+    parcel.polygon.setMap(map);
+    parcel.polygon.addListener("click", (event) => callback());
+  }
+
+  static drawShapesOnMap(map, parcel, setSelectedPolygon, setPolygons, polygons) {
+    console.log("Draw shape on map", parcel);
+    if(map === null || parcel === null) return;
+
+    if(parcel.showOnMap) return
+    
+    var shape;
+    if (parcel.type === "rectangle") {
+        var bounds = new window.google.maps.LatLngBounds(
+            new window.google.maps.LatLng(parcel.coordinates[1]), // southwest corner
+            new window.google.maps.LatLng(parcel.coordinates[3]) // northeast corner
+          );
+      
+          shape = new window.google.maps.Rectangle({
+            bounds: bounds,
+          });
+    } else if (parcel.type === "polygon") {
+         shape = new window.google.maps.Polygon({
+            paths: parcel.coordinates,
+          });
+    }
+
+    console.log("Shape:", shape);
+ 
+    parcel.showOnMap = true;
+    shape.setMap(map);
+    shape.addListener("click", (event) => {
+      setSelectedPolygon(shape);
+    });
+
+    setPolygons([...polygons, shape]);
+  }
+
+
+  static getVertices(shape) {
+    console.log("Shape:", shape);
+
+    if (shape.getBounds) {
+      const bounds = shape.getBounds();
+
+      // Get the North East and South West points
+      const ne = bounds.getNorthEast();
+      const sw = bounds.getSouthWest();
+
+      // Create an array of the four corner points
+      const path = [
+        new window.google.maps.LatLng(ne.lat(), ne.lng()), // North East,
+        new window.google.maps.LatLng(ne.lat(), sw.lng()), // North West,
+        new window.google.maps.LatLng(sw.lat(), sw.lng()), // South West,
+        new window.google.maps.LatLng(sw.lat(), ne.lng()), // South East
+      ];
+
+      console.log("Rectangle bounds:", path);
+
+      // Return the path
+      return path;
+    } else if (shape.getPath) {
+      console.log("Polygon");
+
+      const path = shape.getPath().getArray();
+      console.log("Rectangle bounds:", path);
+      return path;
+    }
+
+    return null;
+  }
 }
+
+
 
 export default MapUtils;

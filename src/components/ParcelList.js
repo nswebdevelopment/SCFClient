@@ -1,20 +1,21 @@
 import "../styles/AreaCoverList.css";
+import "../styles/ParcelList.css";
 
 function ParcelList(props) {
   return (
-    <div style={listStyle}>
+    <div className={"listStyle"}>
       {props.parcels.map((parcel) => {
         return (
           <div
             key={parcel.id}
-            style={itemStyle}
+            className={"itemStyle"}
             onClick={() => props.setSelectedParcel(parcel)}
           >
-            <h2 style={titleStyle}>{parcel.name}</h2>
+            <h2 className={"titleStyle"}>{parcel.name}</h2>
 
-            <i style={descStyle}>{parcel.desc}</i>
+            <i className={"descStyle"}>{parcel.desc}</i>
             <p
-              style={areaStyle}
+              className={"areaStyle"}
               dangerouslySetInnerHTML={{
                 __html: `Parcel Area: ${(parcel.parcelArea / 10000).toFixed(
                   2
@@ -22,7 +23,7 @@ function ParcelList(props) {
               }}
             />
             <p
-              style={areaStyle}
+              className={"areaStyle"}
               dangerouslySetInnerHTML={{
                 __html: `Total Area: ${(parcel.totalArea / 10000).toFixed(
                   2
@@ -36,15 +37,7 @@ function ParcelList(props) {
                 : false) &&
                 parcel.areas.map((area) => {
                   const areaCovered = area["area"];
-
-                  // const landCoverName = area["land_cover_name"];
                   const landCoverColor = area["color"];
-                  // const landCoverColor = 'red';
-                  // const firstWord = landCoverName.split(/\b/)[0];
-
-                  // const className = `list-item ${firstWord
-                  //   .toLowerCase()
-                  //   .replace(/ /g, "-")}`;
 
                   const percentage = (
                     (areaCovered / parcel.totalArea) *
@@ -52,7 +45,7 @@ function ParcelList(props) {
                   ).toFixed(2);
                   return (
                     <li
-                      style={areasStyle}
+                      className={"areasStyle"}
                       key={area["land_cover_name"]}
                       dangerouslySetInnerHTML={{
                         __html: `
@@ -73,14 +66,27 @@ function ParcelList(props) {
                 })}
             </ul>
             {(props.selectedParcel
-                ? props.selectedParcel.id === parcel.id
-                : false) && (
-              <button onClick={() => {
-              
-                props.setEditParcel(props.selectedParcel);
-              }}>
-                Edit Parcel
-              </button>
+              ? props.selectedParcel.id === parcel.id
+              : false) && (
+              <div>
+                <button
+                  onClick={() => {
+                    props.setEditParcel(props.selectedParcel);
+                  }}
+                >
+                  Edit Parcel
+                </button>
+
+                <button
+                  className="red"
+                  onClick={() => {
+                    // props.setEditParcel(props.selectedParcel);
+                    props.removeParcel(parcel);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
             )}
           </div>
         );
@@ -88,53 +94,5 @@ function ParcelList(props) {
     </div>
   );
 }
-
-const listStyle = {
-  height: "calc(100vh - 80px)",
-  width: "300px",
-  background: "white",
-  overflow: "auto",
-  padding: "10px",
-  boxSizing: "border-box",
-  overscrollBehavior: "none",
-};
-
-const itemStyle = {
-  border: "1px solid #ddd",
-  borderRadius: "8px",
-  padding: "10px",
-  marginBottom: "5px", // Reduce the space between items
-  backgroundColor: "#f9f9f9",
-  fontFamily: "Arial, sans-serif",
-  color: "#333",
-  cursor: "pointer",
-};
-
-const titleStyle = {
-  marginBottom: "5px",
-  fontWeight: "bold",
-  fontSize: "1.4em",
-  color: "#555", // Change the color to dark grey
-};
-
-const descStyle = {
-  marginBottom: "5px", // Reduce the space below the description
-  fontSize: "1em",
-  color: "#555",
-};
-
-const areaStyle = {
-  marginBottom: "5px", // Reduce the space below the area
-  fontSize: "1em",
-  color: "#555",
-  cursor: "pointer",
-};
-
-const areasStyle = {
-  marginBottom: "5px", // Reduce the space below the area
-  fontSize: "0.8em",
-  color: "#555",
-  marginLeft: "0px",
-};
 
 export default ParcelList;

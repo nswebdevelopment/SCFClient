@@ -1,0 +1,47 @@
+.listStyle {
+  height: calc(100vh - 80px);
+  width: 300px;
+  background: white;
+  overflow: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  overscroll-behavior: none;
+}
+
+.itemStyle {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+  color: #333;
+  cursor: pointer;
+}
+
+.titleStyle {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 1.4em;
+  color: #555;
+}
+
+.descStyle {
+  margin-bottom: 5px;
+  font-size: 1em;
+  color: #555;
+}
+
+.areaStyle {
+  margin-bottom: 5px;
+  font-size: 1em;
+  color: #555;
+  cursor: pointer;
+}
+
+.areasStyle {
+  margin-bottom: 5px;
+  font-size: 0.8em;
+  color: #555;
+  margin-left: 0px;
+}

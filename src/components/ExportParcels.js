@@ -90,7 +90,7 @@ export function ExportParcelsModal({ children }) {
               </div>
 
               {Object.entries(parcels).map(([key, value]) => (
-                <div key={key}>
+                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
                   <input
                     type="checkbox"
                     id={key}

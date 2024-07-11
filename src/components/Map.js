@@ -11,112 +11,63 @@ import { useExportModal } from "./ExportParcels";
 import FullScreenLoader from "./Loader";
 import MapUtils from "../utils/mapUtils";
 import { baseUrl } from "../utils/constants";
-
-const containerStyle = {
-  flex: 1,
-  height: "calc(100vh - 80px)",
-  top: 0,
-  position: "relative",
-};
-
-const exportButton = {
-  position: "absolute",
-  top: "70px",
-  right: "10px",
-};
-
-const locationOptions = {
-  position: "absolute",
-  top: "10px",
-  right: "10px",
-};
-
-// const soilToggleButton = {
-//   position: "absolute",
-//   top: "50px",
-//   right: "10px",
-// };
-
-const center = { lat: 0, lng: 0 };
+import mapStyle from "../styles/MapStyles";
+import api from "../api/api";
 
 function Map(props) {
-  const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
-
-  const [map, setMap] = React.useState(null);
-  const [loaded, setLoaded] = React.useState(false);
-
-  const [libraries] = React.useState(["drawing", "geometry", "places"]);
-
-  const { openModal } = useModal();
-  const {openExportModal} = useExportModal();
-
-  // const [showSoil, setShowSoil] = useState(true);
-  // const [soilUrl, setSoilUrl] = useState("");
-
+  const [loading, setIsLoading] = useState(false);
+  const [map, setMap] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [libraries] = useState(["drawing", "geometry", "places"]);
   const [lat, setLat] = useState(0);
   const [lng, setLng] = useState(0);
-
-  // Add state for the InfoWindow
   const [showInfoWindow, setShowInfoWindow] = useState(false);
-  // const [infoWindowContent, setInfoWindowContent] = useState(null);
   const [infoWindowPosition, setInfoWindowPosition] = useState(null);
-
-  // Add a new state variable to store the initial state of the polygon
   const [initialPolygonState, setInitialPolygonState] = useState(null);
+  const [placeName, setPlaceName] = useState("");
 
-  const updateCenter = () => {
-    map.setCenter({ lat: parseFloat(lat), lng: parseFloat(lng) });
-  };
+  const placesServiceRef = useRef(null);
+  const parcelsRef = useRef();
 
-  const centerToCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        map.setCenter({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
+  const { openModal } = useModal();
+  const { openExportModal } = useExportModal();
 
-        map.setZoom(10);
-      });
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-  };
+  const [isOptionsVisible, setOptionsIsVisible] = useState(false);
 
-
-// Create a ref for the PlacesService instance
-const placesServiceRef = useRef(null);
-const [placeName, setPlaceName] = useState('');
+  parcelsRef.current = props.parcels;
 
   // Add a new function to search for a location by name
-const searchLocation  = () => {
-  console.log("Searching for location:", placeName);
-  if(placesServiceRef.current && placeName){
-  placesServiceRef.current.textSearch({ query: placeName }, (results, status) => {
-    if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-      // Move the map to the first result
-      map.setCenter(results[0].geometry.location);
-      map.setZoom(12);
-    } else {
-      console.error('Places search failed:', status);
+  const searchLocation = () => {
+    console.log("Searching for location:", placeName);
+    if (placesServiceRef.current && placeName) {
+      placesServiceRef.current.textSearch(
+        { query: placeName },
+        (results, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            // Move the map to the first result
+            MapUtils.updateCenter(
+              map,
+              results[0].geometry.location.lat(),
+              results[0].geometry.location.lng()
+            );
+          } else {
+            console.error("Places search failed:", status);
+          }
+        }
+      );
     }
-  });
-}
-}
-
+  };
 
   const addOverlaysForParcel = React.useCallback(
     (parcel) => {
-      const imageMapType = getImageMapType(parcel.imageUrl, 1.0, parcel.id);
-      // const imageMapTypeGrassland = getImageMapType(parcel.grasslandImageUrl);
-      // const imageMapTypeCropland = getImageMapType(parcel.croplandImageUrl);
+      console.log("Adding overlay for parcel:");
+      if (map && map instanceof window.google.maps.Map) {
+        // Only access overlayMapTypes if map is defined and is an instance of google.maps.Map
 
-      // const imageMapTypeForest = getImageMapType(parcel.forrestImageUrl);
-
-      map.overlayMapTypes.push(imageMapType);
-      // map.overlayMapTypes.push(imageMapTypeGrassland);
-      // map.overlayMapTypes.push(imageMapTypeCropland);
-      // map.overlayMapTypes.push(imageMapTypeForest);
+        console.log("Adding overlay for parcel:", parcel.imageUrl);
+        const imageMapType = getImageMapType(parcel.imageUrl, 1.0, parcel.id);
+        map.overlayMapTypes.push(imageMapType);
+      }
     },
     [map]
   );
@@ -133,105 +84,85 @@ const searchLocation  = () => {
     }
   };
 
-  // const addOverlays = React.useCallback(() => {
-  //   clearOverlays();
-  //   for(const parcel of props.parcels){
-  //     addOverlaysForParcel(parcel);
-  //   }
-  // }, [props.parcels, clearOverlays, addOverlaysForParcel]);
+  useEffect(() => {
+    if (props.removedParcel) {
+      console.log("Removing parcel:", props.removedParcel);
+      props.removedParcel.polygon.setMap(null);
+      clearOverlayForParcel(props.removedParcel);
+      props.addParcel((prevParcels) =>
+        prevParcels.filter((parcel) => parcel.id !== props.removedParcel.id)
+      );
+    }
+  }, [props.removedParcel]);
 
-  const onLoad = React.useCallback(function callback(map) {
-    setMap(map);
-    setLoaded(true);
-
-    placesServiceRef.current = new window.google.maps.places.PlacesService(map);
-    console.log("Places Service:", placesServiceRef.current);
-    //  Use the Geolocation API to get the user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        // Update the center of the map to the user's current location
-        map.setCenter({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        map.setZoom(10);
-      });
-    } else {
-      // Browser doesn't support Geolocation
-      console.log("Geolocation is not supported by this browser.");
+  useEffect(() => {
+    if (!map) {
+      return;
     }
 
+    placesServiceRef.current = new window.google.maps.places.PlacesService(map);
+    MapUtils.centerToCurrentLocation(map);
     map.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
-    // loadSoilData();
     console.log("Google Maps API has loaded");
-  }, []);
+  }, [map]);
 
-  // function loadSoilData() {
-  //   fetch(baseUrl + "/api/getSoilData")
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log("Soil data:", data["soc_100_200cm"]);
-  //       setSoilUrl(data["soc_100_200cm"]);
-  //     });
-  // }
+  function onMapLoaded(googleMap) {
+    setMap(googleMap);
+    setMapLoaded(true);
+  }
 
-  // function showSoilLayer() {
+  useEffect(() => {
+    if (mapLoaded === false) return;
 
-  //   console.log("Showing soil layer", soilUrl);
-  //   if(showSoil && map){
-  //     console.log("Adding soil layer to map", soilUrl);
-  //     const soilLayer = getImageMapType(soilUrl);
-  //     map.overlayMapTypes.push(soilLayer);
+    api.getProjectParcels(props.parcelsOfProject).then((data) => {
+      console.log("fetchProject", data);
+      data.map((parcel) => {
+        const savedCoordinates = JSON.parse(parcel.coordinates);
 
-  //   }
-  // }
+        const shape = new window.google.maps.Polygon({
+          paths: savedCoordinates,
+          editable: false,
+          fillColor: "lightblue",
+          fillOpacity: 0.0,
+          strokeColor: "grey",
+          strokeOpacity: 1,
+          strokeWeight: 2,
+        });
 
-  // useEffect(() => {
-  //   if (soilUrl && showSoil && map) {
-  //     console.log("Adding soil layer to map", soilUrl);
-  //     const soilLayer = getImageMapType(soilUrl);
-  //     // map.overlayMapTypes.push(soilLayer);
+        const newParcel = new Parcel(
+          parcel.id,
+          parcel.name,
+          parcel.desc,
+          parcel.area,
+          shape,
+          parcel.imageUrl,
+          parcel.areas,
+          parcel.parcelArea,
+          parcel.totalArea,
+          parcel.coverTypes
+        );
 
-  //     // Shift up all existing overlays
-  //     for (let i = map.overlayMapTypes.getLength() - 1; i >= 0; i--) {
-  //       const overlay = map.overlayMapTypes.getAt(i);
-  //       map.overlayMapTypes.setAt(i + 1, overlay);
-  //     }
-  //     map.overlayMapTypes.setAt(0, soilLayer);
-  //   }
-  // }, [soilUrl, showSoil, map]);
+        const handleParcelEdit = () => handlePolygonEdit(shape);
+        shape.getPath().addListener("set_at", handleParcelEdit);
+        shape.getPath().addListener("insert_at", handleParcelEdit);
 
-  // function toggleSoilLayer() {
-  //   console.log("Toggling soil layer");
-  //   setShowSoil((prevState) => !prevState);
+        // parcel.polygon = shape;
 
-  //   if (showSoil && map) {
-  //     // console.log("Removing soil layer from map");
+        shape.setMap(map);
+        shape.addListener("click", (event) => {
+          props.setSelectedParcel(newParcel);
+        });
 
-  //     // map.overlayMapTypes.removeAt(0)
-  //     // // Remove the soil layer at its index
-
-  //     const soilLayer = getImageMapType(soilUrl, 0.0);
-  //     // map.overlayMapTypes.push(soilLayer);
-
-  //     // Shift up all existing overlays
-  //     // for (let i = map.overlayMapTypes.getLength() - 1; i >= 0; i--) {
-  //     //   const overlay = map.overlayMapTypes.getAt(i);
-  //     //   map.overlayMapTypes.setAt(i + 1, overlay);
-  //     // }
-  //     map.overlayMapTypes.setAt(0, soilLayer);
-  //   }
-  // }
+        props.addParcel((prevParcels) => [...prevParcels, newParcel]);
+        // createPolygon(pol, parcel.coverTypes, parcel.name, parcel.desc)
+        addOverlaysForParcel(newParcel);
+      });
+    });
+  }, [mapLoaded]);
 
   const onUnmount = React.useCallback(function callback(map) {
     setMap(null);
   }, []);
-
-  useEffect(() => {
-    if (loaded) {
-      console.log("Rendering DrawingManager");
-    }
-  }, [loaded]);
 
   useEffect(() => {
     if (props.editParcel != null) {
@@ -242,81 +173,79 @@ const searchLocation  = () => {
         props.editParcel.desc,
         props.editParcel.coverTypes,
         (parcel) => {
-
           props.editParcel.name = parcel.name;
           props.editParcel.desc = parcel.desc;
 
           // Save the parcel with the entered name and description
-          if(parcel)
-            {
-              if (parcel.selectedTypes.length > 0 && parcel.selectedTypes !== props.editParcel.coverTypes) {
-                clearOverlayForParcel(props.editParcel);
-                fetchCoverTypes(
-                  props.editParcel.polygon,
-                  parcel.selectedTypes,
-                  (data) => {
-                 
-                    props.editParcel.imageUrl = data["urlFormat"];
-                    props.editParcel.urlFormat = data["urlFormat"];
-                    props.editParcel.grasslandUrlFormat =
-                      data["grasslandUrlFormat"];
-                    props.editParcel.croplandUrlFormat = data["croplandUrlFormat"];
-                    props.editParcel.forestUrlFormat = data["forestUrlFormat"];
-                    props.editParcel.areas = data["areas"];
-                    props.editParcel.parcelArea = data["parcelArea"];
-                    props.editParcel.totalArea = data["totalArea"];
-                    props.editParcel.coverTypes = parcel.selectedTypes;
-    
-                    // const handleParcelEdit = () => handlePolygonEdit(newParcel);
-    
-                    // if (polygon.getBounds) {
-                    //   polygon.addListener('bounds_changed', handleParcelEdit);
-                    // } else if (polygon.getPath) {
-                    //   polygon.getPath().addListener('set_at', handleParcelEdit);
-                    //   polygon.getPath().addListener('insert_at', handleParcelEdit);
-                    // }
-    
-                    // Find the index of the edited parcel in the parcels array
-                    const parcelIndex = parcelsRef.current.findIndex(
-                      (p) => p.id === props.editParcel.id
-                    );
-    
-                    console.log("Parcel index:", parcelsRef.current.length);
-                    // Create a new array with the updated parcel
-                    const newParcels = [...parcelsRef.current];
-                    newParcels[parcelIndex] = props.editParcel;
-    
-                    // Update the parcels state
-                    props.addParcel(newParcels);
-    
-                    addOverlaysForParcel(props.editParcel, map);
-                    setIsCreatingPolygon(false);
-                  }
-                );
-    
-                console.log("Modal closed without saving.");
-              }
-              else
-              {
-            
+          if (parcel) {
+            if (
+              parcel.selectedTypes.length > 0 &&
+              parcel.selectedTypes !== props.editParcel.coverTypes
+            ) {
+              clearOverlayForParcel(props.editParcel);
+
+              const vertices = getVertices(props.editParcel.polygon);
+              fetchCoverTypes(vertices, parcel.selectedTypes, (data) => {
+                props.editParcel.imageUrl = data["urlFormat"];
+                props.editParcel.urlFormat = data["urlFormat"];
+                props.editParcel.areas = data["areas"];
+                props.editParcel.parcelArea = data["parcelArea"];
+                props.editParcel.totalArea = data["totalArea"];
+                props.editParcel.coverTypes = parcel.selectedTypes;
+
+                // const handleParcelEdit = () => handlePolygonEdit(newParcel);
+
+                // if (polygon.getBounds) {
+                //   polygon.addListener('bounds_changed', handleParcelEdit);
+                // } else if (polygon.getPath) {
+                //   polygon.getPath().addListener('set_at', handleParcelEdit);
+                //   polygon.getPath().addListener('insert_at', handleParcelEdit);
+                // }
+
+                // Find the index of the edited parcel in the parcels array
                 const parcelIndex = parcelsRef.current.findIndex(
                   (p) => p.id === props.editParcel.id
                 );
-    
+
                 console.log("Parcel index:", parcelsRef.current.length);
                 // Create a new array with the updated parcel
                 const newParcels = [...parcelsRef.current];
                 newParcels[parcelIndex] = props.editParcel;
-    
+
                 // Update the parcels state
-                props.addParcel(newParcels);
-    
-                setIsCreatingPolygon(false);
-              }
+
+                api
+                  .addParcelToProject(props.parcelsOfProject, props.editParcel)
+                  .then((data) => {
+                    props.addParcel(newParcels);
+                  });
+
+                addOverlaysForParcel(props.editParcel, map);
+                setIsLoading(false);
+              });
+
+              console.log("Modal closed without saving.");
+            } else {
+              const parcelIndex = parcelsRef.current.findIndex(
+                (p) => p.id === props.editParcel.id
+              );
+
+              console.log("Parcel index:", parcelsRef.current.length);
+              // Create a new array with the updated parcel
+              const newParcels = [...parcelsRef.current];
+              newParcels[parcelIndex] = props.editParcel;
+
+              // Update the parcels state
+              api
+                .addParcelToProject(props.parcelsOfProject, props.editParcel)
+                .then((data) => {
+                  props.addParcel(newParcels);
+                });
+              // props.addParcel(newParcels);
+
+              setIsLoading(false);
             }
-      
-
-
+          }
         },
         () => {
           console.log("Modal closed without saving.");
@@ -325,7 +254,7 @@ const searchLocation  = () => {
         }
       );
     }
-     // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [props.editParcel]);
 
   useEffect(() => {
@@ -375,13 +304,9 @@ const searchLocation  = () => {
         )
       );
 
-      const handleParcelEdit = () =>handlePolygonEdit(props.selectedParcel, shape);
-
-        shape.getPath().addListener("set_at", handleParcelEdit);
-        shape.getPath().addListener("insert_at", handleParcelEdit);
-      
-
-  
+      const handleParcelEdit = () => handlePolygonEdit(shape);
+      shape.getPath().addListener("set_at", handleParcelEdit);
+      shape.getPath().addListener("insert_at", handleParcelEdit);
     }
     // Close the InfoWindow or OverlayView
     setShowInfoWindow(false);
@@ -390,35 +315,39 @@ const searchLocation  = () => {
   function handleShapeChangeSave() {
     clearOverlayForParcel(props.selectedParcel);
 
-    fetchCoverTypes(
-      props.selectedParcel.polygon,
-      props.selectedParcel.coverTypes,
-      (data) => {
-        props.selectedParcel.imageUrl = data["urlFormat"];
-        props.selectedParcel.urlFormat = data["urlFormat"];
-        props.selectedParcel.grasslandUrlFormat = data["grasslandUrlFormat"];
-        props.selectedParcel.croplandUrlFormat = data["croplandUrlFormat"];
-        props.selectedParcel.forestUrlFormat = data["forestUrlFormat"];
-        props.selectedParcel.areas = data["areas"];
-        props.selectedParcel.parcelArea = data["parcelArea"];
-        props.selectedParcel.totalArea = data["totalArea"];
+    const vertices = getVertices(props.selectedParcel.polygon);
 
-        // Find the index of the edited parcel in the parcels array
-        const parcelIndex = parcelsRef.current.findIndex(
-          (p) => p.id === props.selectedParcel.id
-        );
+    fetchCoverTypes(vertices, props.selectedParcel.coverTypes, (data) => {
+      props.selectedParcel.imageUrl = data["urlFormat"];
+      props.selectedParcel.urlFormat = data["urlFormat"];
+      props.selectedParcel.areas = data["areas"];
+      props.selectedParcel.parcelArea = data["parcelArea"];
+      props.selectedParcel.totalArea = data["totalArea"];
 
-        // Create a new array with the updated parcel
-        const newParcels = [...parcelsRef.current];
-        newParcels[parcelIndex] = props.selectedParcel;
+      // Find the index of the edited parcel in the parcels array
+      const parcelIndex = parcelsRef.current.findIndex(
+        (p) => p.id === props.selectedParcel.id
+      );
 
-        // Update the parcels state
-        props.addParcel(newParcels);
+      // Create a new array with the updated parcel
+      const newParcels = [...parcelsRef.current];
 
-        addOverlaysForParcel(props.selectedParcel, map);
-        setIsCreatingPolygon(false);
-      }
-    );
+      props.selectedParcel.coordinates = JSON.stringify(vertices);
+
+      newParcels[parcelIndex] = props.selectedParcel;
+
+      console.log("To update:", props.selectedParcel.coordinates);
+      api
+        .addParcelToProject(props.parcelsOfProject, props.selectedParcel)
+        .then((data) => {
+          props.addParcel(newParcels);
+        });
+
+      //  props.addParcel(newParcels);
+
+      addOverlaysForParcel(props.selectedParcel, map);
+      setIsLoading(false);
+    });
 
     saveCurrentShapeState(props.selectedParcel.polygon);
     setShowInfoWindow(false);
@@ -487,11 +416,10 @@ const searchLocation  = () => {
     });
   }
 
-  function fetchCoverTypes(polygon, types, callback) {
-    setIsCreatingPolygon(true);
+  function fetchCoverTypes(vertices, types, callback) {
+    setIsLoading(true);
 
     // Access the vertices of the polygon
-    const vertices = getVertices(polygon);
 
     // const area = window.google.maps.geometry.spherical.computeArea(vertices);
     const lngLatArray = [];
@@ -527,47 +455,56 @@ const searchLocation  = () => {
     return;
   }
 
+  function createPolygon(polygon, selectedTypes, name, desc) {
+    const vertices = getVertices(polygon);
+    fetchCoverTypes(vertices, selectedTypes, (data) => {
+      const newParcel = new Parcel(
+        props.parcels.length,
+        name,
+        desc,
+        0,
+        polygon,
+        data["urlFormat"],
+        data["areas"],
+        data["parcelArea"],
+        data["totalArea"],
+        selectedTypes
+      );
+
+      const handleParcelEdit = () => handlePolygonEdit(polygon);
+
+      if (polygon.getBounds) {
+        polygon.addListener("bounds_changed", handleParcelEdit);
+      } else if (polygon.getPath) {
+        polygon.getPath().addListener("set_at", handleParcelEdit);
+        polygon.getPath().addListener("insert_at", handleParcelEdit);
+      }
+
+      console.log("Modal closed and parcel saved.", props.parcels.length);
+
+      api.addParcelToProject(props.parcelsOfProject, newParcel).then((data) => {
+        props.addParcel((prevParcels) => [...prevParcels, newParcel]);
+      });
+
+      addOverlaysForParcel(newParcel, map);
+      setIsLoading(false);
+    });
+  }
+
   function handlePolygonComplete(polygon) {
     openModal(
       `Parcel No. ${(props.parcels.length + 1).toString().padStart(5, "0")}`,
-      '',
+      "",
       [],
       (parcel) => {
         // Save the parcel with the entered name and description
         if (parcel && parcel.selectedTypes.length > 0) {
-          fetchCoverTypes(polygon, parcel.selectedTypes, (data) => {
-            const newParcel = new Parcel(
-              props.parcels.length,
-              parcel.name,
-              parcel.desc,
-              0,
-              polygon,
-              data["urlFormat"],
-              data["grasslandUrlFormat"],
-              data["croplandUrlFormat"],
-              data["forestUrlFormat"],
-              data["areas"],
-              data["parcelArea"],
-              data["totalArea"],
-              parcel.selectedTypes
-            );
-
-            const handleParcelEdit = () =>
-              handlePolygonEdit(newParcel, polygon);
-
-            if (polygon.getBounds) {
-              polygon.addListener("bounds_changed", handleParcelEdit);
-            } else if (polygon.getPath) {
-              polygon.getPath().addListener("set_at", handleParcelEdit);
-              polygon.getPath().addListener("insert_at", handleParcelEdit);
-            }
-
-            props.addParcel((prevParcels) => [...prevParcels, newParcel]);
-            console.log("Modal closed and parcel saved.", props.parcels.length);
-
-            addOverlaysForParcel(newParcel, map);
-            setIsCreatingPolygon(false);
-          });
+          createPolygon(
+            polygon,
+            parcel.selectedTypes,
+            parcel.name,
+            parcel.desc
+          );
         }
         console.log("Modal closed without saving.");
         // setIsCreatingPolygon(false);
@@ -581,18 +518,11 @@ const searchLocation  = () => {
     );
   }
 
-  function handlePolygonEdit(parcel, polygon) {
-    // Handle the polygon edit here
-    // const parcel = this.parcel;
+  function handlePolygonEdit(polygon) {
     console.log("Polygon:", polygon);
-    // parcel.name = 'Edited Parcel';
-    // clearOverlayForParcel(parcel);
-    // console.log("Polygon edited", this.getArray);
-
-    // parcel.polygon = polygon;
+    console.log("selectedParcel:", props.selectedParcel);
 
     setShowInfoWindow(true);
-    // setInfoWindowContent(`Polygon ${parcel.name} is being edited.`);
     setInfoWindowPosition(getPolygonCenter(polygon));
   }
 
@@ -610,60 +540,21 @@ const searchLocation  = () => {
     return bounds.getCenter();
   }
 
-  // useEffect(() => {
-  //   if (props.selectedParcel) {
-
-  //     clearOverlays();
-  //     addOverlaysForParcel(props.selectedParcel);
-  //   }
-  // }, [props.selectedParcel, props.parcels, addOverlaysForParcel, clearOverlays]);
-
-  function drawPolygonsOnMap(parcel) {
-    parcel.polygon.setMap(map);
-    parcel.polygon.addListener("click", (event) => {
-      props.setSelectedParcel(parcel);
-    });
-  }
-
-  const parcelsRef = useRef();
-  parcelsRef.current = props.parcels;
-
-  // useEffect(() => {
-  //   const exportButton = document.getElementById('exportButton');
-  //   if (exportButton) {
-  //     exportButton.addEventListener('click', function() {
-
-  //       if (parcelsRef.current) {
-
-  //         MapUtils.exportToKML(parcelsRef.current);
-  //       }
-  //     });
-  //   }
-  // }, []);
-
   const exportToKml = () => {
     // Your KML export logic here
     console.log("Export to KML button clicked", props.parcels.length);
     if (props.parcels.length === 0) {
       return;
     }
-    // MapUtils.exportToKML(props.parcels);
-
 
     openExportModal(
       props.parcels,
       (data) => {
-        // Save the parcel with the entered name and description
-   
         if (data && data.parcels.length > 0) {
-            console.log("Exporting parcels:", data.parcels);
-          
+          console.log("Exporting parcels:", data.parcels);
+
           MapUtils.exportToKML(data.parcels);
         }
-       
-        // setIsCreatingPolygon(false);
-
-        // polygon.setMap(null);
       },
       () => {
         console.log("Modal closed without saving.");
@@ -672,39 +563,42 @@ const searchLocation  = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      {isCreatingPolygon ? <FullScreenLoader /> : null}
+    <div style={mapStyle.containerStyle}>
+      {loading ? <FullScreenLoader /> : null}
       <LoadScript
         googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
         libraries={libraries}
         preventGoogleFontsLoading={false}
       >
         <GoogleMap
-          mapContainerStyle={containerStyle}
-          zoom={2}
-          center={center}
-          onLoad={onLoad}
+          mapContainerStyle={mapStyle.containerStyle}
+          zoom={MapUtils.initialZoom}
+          center={MapUtils.initialCenter}
+          onLoad={onMapLoaded}
           onUnmount={onUnmount}
           options={{
             mapTypeControl: true,
             mapTypeControlOptions: {
-              style: loaded
+              style: mapLoaded
                 ? window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR
                 : undefined,
-              position: loaded
+              position: mapLoaded
                 ? window.google.maps.ControlPosition.LEFT_TOP
                 : undefined,
             },
             fullscreenControl: false,
           }}
         >
-          {props.parcels.map((parcel) => {
-            drawPolygonsOnMap(parcel);
-            // console.log(parcel.name);
-            return null; // Add a return statement here
-          })}
+          {mapLoaded &&
+            props.parcels.map((parcel) => {
+              MapUtils.drawPolygonsOnMap(map, parcel, () => {
+                props.setSelectedParcel(parcel);
+              });
+              // console.log(parcel.name);
+              return null; // Add a return statement here
+            })}
 
-          {loaded && (
+          {mapLoaded && (
             <DrawingManager
               options={{
                 drawingControl: true,
@@ -746,61 +640,91 @@ const searchLocation  = () => {
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
-                <button onClick={handleShapeChangeSave}>Save</button>
-                <button onClick={handleShapeChangeCancel}>Cancel</button>
+                <button
+                  style={{ width: "100px" }}
+                  onClick={handleShapeChangeSave}
+                >
+                  Save
+                </button>
+                <button
+                  style={{ width: "100px" }}
+                  onClick={handleShapeChangeCancel}
+                >
+                  Cancel
+                </button>
               </div>
             </OverlayView>
           )}
         </GoogleMap>
 
-        <button
-          style={exportButton}
-          id="exportButton"
-          onClick={exportToKml}
-          disabled={props.parcels.length === 0}
-        >
-          Export to KML
-        </button>
-        {/* <button onClick={toggleSoilLayer} style={soilToggleButton}>
-          {showSoil ? "Hide" : "Show"} Soil Layer
-        </button> */}
-
-
-  
-
-        <div style={locationOptions}>
-         
-        <div>
-        <input
-            type="text"
-            value={placeName}
-            onChange={(e) => setPlaceName(e.target.value)}
-            placeholder="Place Name"
-          />
-          <button onClick={searchLocation}>Go</button>
-
-        </div>
-
-          <input
-            type="number"
-    
-          
-            onChange={(e) => setLat(e.target.value)}
-            placeholder="Latitude"
-          />
-          <input
-            type="number"
-          
-            onChange={(e) => setLng(e.target.value)}
-            placeholder="Longitude"
-          />
-
-<button onClick={updateCenter}>Go</button>
-          <div>
-          
-            <button onClick={centerToCurrentLocation}>
-              Center to Current Location
+        <div style={mapStyle.locationOptions}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              style={{ width: "30px" }}
+              onClick={() => setOptionsIsVisible(!isOptionsVisible)}
+            >
+              {isOptionsVisible ? "▲" : "▼"}
             </button>
+          </div>
+
+          <div className={`slideToggle ${isOptionsVisible ? "open" : ""}`}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="text"
+                value={placeName}
+                onChange={(e) => setPlaceName(e.target.value)}
+                placeholder="Place Name"
+              />
+              <button
+                style={{ width: "40px", height: "100%" }}
+                onClick={searchLocation}
+              >
+                Go
+              </button>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="number"
+                onChange={(e) => setLat(e.target.value)}
+                placeholder="Latitude"
+              />
+              <input
+                type="number"
+                onChange={(e) => setLng(e.target.value)}
+                placeholder="Longitude"
+              />
+
+              <button
+                style={{ width: "40px" }}
+                onClick={() => MapUtils.updateCenter(map, lat, lng)}
+              >
+                Go
+              </button>
+            </div>
+
+            <div>
+              <button onClick={() => MapUtils.centerToCurrentLocation(map)}>
+                Center to Current Location
+              </button>
+            </div>
+
+            <div>
+              <button
+                id="exportButton"
+                onClick={exportToKml}
+                disabled={props.parcels.length === 0}
+              >
+                Export to KML
+              </button>
+            </div>
+            {/* Your existing code */}
           </div>
         </div>
       </LoadScript>

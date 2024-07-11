@@ -1,0 +1,40 @@
+@import './Color.css';
+
+.project-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-rows: 200px;
+    gap: 10px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 80px;
+    bottom: 0;
+    background-color: white;
+    overflow: hidden;
+    padding: 10px;
+  }
+  
+  .project {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .newProject {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: white;
+    text-align: center;
+  }
+
+  .newProject:hover {
+    background-color: var(--secondary);
+  }

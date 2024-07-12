@@ -4,8 +4,7 @@ import useApiManager from "./apiManager.js";
 // const baseUrl = 'http://localhost:3001';
 
 function ApiManager() {
-  const {api, setToken} = useApiManager();
-
+  const { api, setToken } = useApiManager();
 
   //AUTHORIZATION START
   function login(username, password) {
@@ -13,7 +12,7 @@ function ApiManager() {
       .post("/auth/login", {
         username: username,
         password: password,
-        expiresInMins: 1
+        expiresInMins: 1,
       })
       .then((response) => {
         // The access token is usually located in the response data
@@ -23,52 +22,46 @@ function ApiManager() {
         // Save the token to localStorage
         setToken(token, refreshToken);
         return response.data;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        throw error; // Throw the error so it can be caught in LoginPage
       });
   }
   //AUTHORIZATION END
 
-//USER START
-function getUserDetails(id)
-{
-  return api.get("/auth/me", {
-    params: {
-      callId: id
-    }
-  })
-  .then((response) => {
-    return response.data;
-  })
-  .catch((error) => {
-    // throw error; // Throw the error so it can be caught in LoginPage
-  });
-}
-//USER END
+  //USER START
+  function getUserDetails(id) {
+    return api
+      .get("/auth/me", {
+        params: {
+          callId: id,
+        },
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        // throw error; // Throw the error so it can be caught in LoginPage
+      });
+  }
+  //USER END
 
-
-
-//PROJECTS START
+  //PROJECTS START
   var projects = [
-    new Project(1, "Project 1", []),
-    new Project(2, "Project 2", []),
+    new Project(Math.floor(Math.random() * 1000000), "Project 1", []),
   ];
 
   function fetchProject() {
-    console.log("fetchProject");
-    // const mockData = projects;
-
+    // console.log("fetchProject");
+  
     return new Promise((resolve, reject) => {
       setTimeout(() => resolve(projects), 1000); // Simulate a delay of 1 second
     });
   }
 
   function addProject(projectName) {
-    // console.log("addProject", project);
-    const newProject = new Project(projects.length + 1, projectName, []);
-    // addProjects([...projects, newProject]);
+    const newProject = new Project(
+      Math.floor(Math.random() * 1000000),
+      projectName,
+      []
+    );
     projects.push(newProject);
 
     return new Promise((resolve, reject) => {
@@ -77,10 +70,10 @@ function getUserDetails(id)
   }
 
   function removeProject(projectId) {
-    projects = projects.filter((p) => p.id !== projectId);
+    // projects = projects.filter((p) => p.id !== projectId);
 
     return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(true), 1000); // Simulate a delay of 1 second
+      setTimeout(() => resolve(projectId), 1000); // Simulate a delay of 1 second
     });
   }
 
@@ -95,7 +88,6 @@ function getUserDetails(id)
   }
 
   //PROJECTS END
-
 
   //PARCELS START
   function addParcelToProject(projectId, parcel) {
@@ -146,7 +138,7 @@ function getUserDetails(id)
     getProjectParcels,
     removeParcel,
     removeProject,
-    getUserDetails
+    getUserDetails,
   };
 }
 

@@ -1,29 +1,42 @@
 import React, { useState } from "react";
-import api from "../../../api/api";
+import PropTypes from 'prop-types';
 
+function NewProjectPopup({ id, addNewProject, onClose }) {
+  const [projectName, setProjectName] = useState(
+    `Project ${id}`
+  );
 
-function NewProjectPopup(props) {
+  const handleAddProject = (event) => {
+    event.preventDefault();
+    if (projectName) {
+      addNewProject(projectName);
+    }
+  };
 
-    const [projectName, setProjectName] = useState(`Project ${props.projects.length + 1}`);
-    const handleAddProject = (event) => {
-      event.preventDefault();
-      api.addProject(projectName).then((data) => {
-        props.setProject([...props.projects, data]);
-      });
-      props.onClose();
-    };
+  return (
+    <div>
+      <h2>Add New Project</h2>
+      <form onSubmit={handleAddProject}>
+        {/* Add your form fields here */}
+        <input
+          type="text"
+          placeholder="Project Name"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+        />
+        <button type="submit">Add</button>
+        <button type="button" onClick={onClose}>
+          Cancel
+        </button>
+      </form>
+    </div>
+  );
+}
 
-    return (
-      <div>
-        <h2>Add New Project</h2>
-        <form onSubmit={handleAddProject}>
-          {/* Add your form fields here */}
-          <input type="text" placeholder="Project Name" value={projectName}  onChange={(e) => setProjectName(e.target.value)} />
-          <button type="submit">Add</button>
-          <button type="button" onClick={props.onClose}>Cancel</button>
-        </form>
-      </div>
-    );
-  }
+NewProjectPopup.propTypes = {
+  addNewProject: PropTypes.func.isRequired,
+  id: PropTypes.number.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
-  export default NewProjectPopup;
+export default NewProjectPopup;

@@ -1,34 +1,47 @@
-import React, { useState }  from 'react';
+import React, { useState, useEffect }  from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/scf_logo.png'; // replace 'yourLogo.png' with your actual file name
-import api from "../../api/api";
 
+import { UserActions } from '../../actions/UserActions';
+
+import UserStore from '../../stores/UserStore';
+import './LoginPage.css';
 
 function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  
+
+
+  useEffect(() => {
+    UserStore.on("change", loggedIn);
+    UserStore.on("login_error", onLoginError);
+    return () => {
+      UserStore.removeListener("change", loggedIn);
+      UserStore.removeListener("login_error", onLoginError);
+    };
+  }, []);
+
+  const loggedIn = () => {
+    console.log("logged in");
+    navigate('/home');
+  };
+
+
+  const onLoginError = () => {
+    setError(UserStore.getError());
+  };
 
   const handleLogin = (event) => {
     event.preventDefault();
-    // Add your login logic here. If login is successful, navigate to the home page.
-    api.login(event.target.username.value, event.target.password.value)
-    .then((data) => {  
-      console.log("loginpage", data);
-      // If login is successful, navigate to the home page
-      navigate('/home');
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      // If login fails, you can show an error message here
-      setError('Invalid username or password');
-    });
+    UserActions.login(event.target.username.value, event.target.password.value);
   };
 
   return (
-    <div style={{ display: 'flex',flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div className='login_container'>
       <img className= 'logo' src={logo} alt="logo"  style={{ marginLeft: '0px'}}/>
      
-      <form style={{ width: '400px'}} onSubmit={handleLogin}>
+      <form className='login_form' onSubmit={handleLogin}>
             <label>
           Username:
           <input type="text" name="username" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
 import { Link } from 'react-router-dom';
@@ -7,10 +7,14 @@ import './Navbar.css';
 import { IconContext } from 'react-icons';
 import logo from '../../assets/scf_logo.png'; // replace 'yourLogo.png' with your actual file name
 
+import UserStore from '../../stores/UserStore';
+
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
 
   const showSidebar = () => setSidebar(!sidebar);
+  const [userName, setUserName] = useState(UserStore.getUserDetails().firstName + " " + UserStore.getUserDetails().lastName);
+
 
   return (
 
@@ -21,6 +25,8 @@ function Navbar() {
           </Link>
 
           <img className= 'logo' src={logo} alt="logo"/>
+
+          <h1>{userName}</h1>
         </div>
         <nav className={sidebar ? 'nav-menu active' : 'nav-menu'}>
           <ul className='nav-menu-items' onClick={showSidebar}>

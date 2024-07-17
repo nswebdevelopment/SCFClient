@@ -1,13 +1,14 @@
 import MapUtils from "../utils/mapUtils";
 
 class Parcel {
-  constructor(id, name, desc, area, polygon, imageUrl, areas, parcelArea, totalArea, coverTypes) {
+  constructor(id, name, desc, area, shape, imageUrl, areas, parcelArea, totalArea, coverTypes) {
     this.id = id;
     this.name = name;
     this.desc = desc;
     this.area = area;
-    this._polygon = polygon;
-    this.coordinates = JSON.stringify(MapUtils.getVertices(polygon));
+    this._shape = shape;
+    this.shapeType = MapUtils.getShapeType(this.shape);
+    this.coordinates = JSON.stringify(MapUtils.getVertices(shape));
     this.imageUrl = imageUrl;
     this.areas = areas;
     this.totalArea = totalArea;
@@ -17,13 +18,14 @@ class Parcel {
 
   showOnMap = false;
 
-  set polygon(polygon) {
-    this.coordinates = JSON.stringify(MapUtils.getVertices(polygon));
+  set shape(shape) {
+    this.coordinates = JSON.stringify(MapUtils.getVertices(shape));
   }
 
-  get polygon() {
-    return this._polygon;
+  get shape() {
+    return this._shape;
   }
+
 }
 
 

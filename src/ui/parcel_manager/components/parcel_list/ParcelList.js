@@ -1,15 +1,46 @@
-import "../styles/AreaCoverList.css";
-import "../styles/ParcelList.css";
+import { useEffect, useState } from "react";
+import "./AreaCoverList.css";
+import "./ParcelList.css";
+import ParcelStore from "../../../../stores/ParcelStore";
+import { ParcelActions } from "../../../../actions/ParcelActions";
 
-function ParcelList(props) {
+
+function ParcelList() {
+  const [selectedParcel, setSelectedParcel] = useState(null);
+
+  const [parcels, setParcels] = useState([]);
+
+  useEffect(() => {
+    ParcelStore.on("selectedParcel", selectedParcelChanged);
+    ParcelStore.on("changed", listChanged);
+
+    return () => {
+      ParcelStore.removeListener("selectedParcel", selectedParcelChanged);
+      ParcelStore.on("changed", listChanged);
+
+    };
+  }, []);
+
+  const selectedParcelChanged = () => {
+    setSelectedParcel(ParcelStore.getSelectedParcel());
+  };
+
+
+  const listChanged = () => {
+    console.log("listChanged", ParcelStore.getProjectParcels().length);
+    setParcels([...ParcelStore.getProjectParcels()]);
+  };
+
   return (
     <div className={"listStyle"}>
-      {props.parcels.map((parcel) => {
+      {parcels.map((parcel) => {
         return (
           <div
             key={parcel.id}
             className={"itemStyle"}
-            onClick={() => props.setSelectedParcel(parcel)}
+            onClick={() => 
+              ParcelActions.setSelectedParcel(parcel)
+            }
           >
             <h2 className={"titleStyle"}>{parcel.name}</h2>
 
@@ -32,8 +63,8 @@ function ParcelList(props) {
             />
 
             <ul>
-              {(props.selectedParcel
-                ? props.selectedParcel.id === parcel.id
+              {(selectedParcel
+                ? selectedParcel.id === parcel.id
                 : false) &&
                 parcel.areas.map((area) => {
                   const areaCovered = area["area"];
@@ -65,13 +96,13 @@ function ParcelList(props) {
                   );
                 })}
             </ul>
-            {(props.selectedParcel
-              ? props.selectedParcel.id === parcel.id
+            {(selectedParcel
+              ? selectedParcel.id === parcel.id
               : false) && (
               <div>
                 <button
                   onClick={() => {
-                    props.setEditParcel(props.selectedParcel);
+                    ParcelActions.editParcel();
                   }}
                 >
                   Edit Parcel
@@ -80,8 +111,7 @@ function ParcelList(props) {
                 <button
                   className="red"
                   onClick={() => {
-                    // props.setEditParcel(props.selectedParcel);
-                    props.removeParcel(parcel);
+                    ParcelActions.removeParcel(ParcelStore.getProjectId(), parcel);
                   }}
                 >
                   Remove

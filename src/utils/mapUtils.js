@@ -1,4 +1,9 @@
 class MapUtils {
+  static initialCenter = { lat: 0, lng: 0 };
+  static initialZoom = 2;
+  
+  
+  
   static exportToKML(parcels) {
     console.log("export to kml", parcels.length);
     let kml =
@@ -6,7 +11,7 @@ class MapUtils {
       '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
       "<Document>\n";
     parcels.forEach((parcel) => {
-      kml += MapUtils.convertShapeToKML(parcel.polygon);
+      kml += MapUtils.convertShapeToKML(parcel.shape);
     });
     kml += "</Document>\n</kml>";
 
@@ -94,14 +99,16 @@ class MapUtils {
     document.body.removeChild(element);
   }
 
-  static initialCenter = { lat: 0, lng: 0 };
-  static initialZoom = 2;
+
 
   static centerToCurrentLocation(map) {
     if (navigator.geolocation && map) {
       navigator.geolocation.getCurrentPosition((position) => {
-        this.updateCenter(map, position.coords.latitude, position.coords.longitude);
-        
+        this.updateCenter(
+          map,
+          position.coords.latitude,
+          position.coords.longitude
+        );
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
@@ -111,48 +118,17 @@ class MapUtils {
   static updateCenter(map, lat, lng) {
     map.setZoom(10);
     map.panTo({ lat: parseFloat(lat), lng: parseFloat(lng) });
- 
   }
 
   static drawPolygonsOnMap(map, parcel, callback) {
-    if(map === null || parcel === null) return;
-    parcel.polygon.setMap(map);
-    parcel.polygon.addListener("click", (event) => callback());
+
+    console.log("Draw polygon on map", parcel);
+    if (map === null || parcel === null) return;
+
+
+    parcel.shape.setMap(map);
+    parcel.shape.addListener("click", (event) => callback());
   }
-
-  static drawShapesOnMap(map, parcel, setSelectedPolygon, setPolygons, polygons) {
-    console.log("Draw shape on map", parcel);
-    if(map === null || parcel === null) return;
-
-    if(parcel.showOnMap) return
-    
-    var shape;
-    if (parcel.type === "rectangle") {
-        var bounds = new window.google.maps.LatLngBounds(
-            new window.google.maps.LatLng(parcel.coordinates[1]), // southwest corner
-            new window.google.maps.LatLng(parcel.coordinates[3]) // northeast corner
-          );
-      
-          shape = new window.google.maps.Rectangle({
-            bounds: bounds,
-          });
-    } else if (parcel.type === "polygon") {
-         shape = new window.google.maps.Polygon({
-            paths: parcel.coordinates,
-          });
-    }
-
-    console.log("Shape:", shape);
- 
-    parcel.showOnMap = true;
-    shape.setMap(map);
-    shape.addListener("click", (event) => {
-      setSelectedPolygon(shape);
-    });
-
-    setPolygons([...polygons, shape]);
-  }
-
 
   static getVertices(shape) {
     console.log("Shape:", shape);
@@ -186,8 +162,110 @@ class MapUtils {
 
     return null;
   }
+
+
+  static getShape(shape) {
+    if (shape.getBounds) {
+      return [
+        shape.getBounds().getSouthWest(),
+        shape.getBounds().getNorthEast(),
+      ];
+    } else if (shape.getPath) {
+       return shape
+          .getPath()
+          .getArray()
+          .map((coord) => ({ lat: coord.lat(), lng: coord.lng() }))
+      ;
+    }
+  }
+
+  static getShapeType(shape) {
+    if (shape.getBounds) {
+      return "rectangle";
+    } else if (shape.getPath) {
+      return "polygon";
+    }
+  }
+
+  static getBoundsOfShape(shape) {
+    if (shape.getBounds) {
+      return shape.getBounds();
+    } else if (shape.getPath) {
+      const bounds = new window.google.maps.LatLngBounds();
+      shape.getPath().forEach(function (point) {
+        bounds.extend(point);
+      });
+
+      return bounds;
+    }
+    return null;
+  }
+
+  static clearOverlayForParcel(map, parcelId) {
+    console.log("Clear overlay for parcel", parcelId);
+    if (map === null || parcelId === null) return;
+
+    if(map instanceof window.google.maps.Map){
+
+    if (map.overlayMapTypes === null) return;
+
+    const overlayIndex = map.overlayMapTypes.getArray().findIndex((overlay) => {
+      return overlay.name === parcelId;
+    });
+
+    if (overlayIndex !== -1) {
+      map.overlayMapTypes.removeAt(overlayIndex);
+    }
+  }
+  }
+
+  static addOverlaysForParcel(parcel, map) {
+
+    if (map && map instanceof window.google.maps.Map) {
+
+    const index = map.overlayMapTypes.getArray().findIndex((overlay) => {
+      return overlay.name === parcel.id;
+    });
+
+    if (index !== -1) return;
+      const imageMapType = this.getImageMapType(
+        parcel.imageUrl,
+        1.0,
+        parcel.id
+      );
+
+        map.overlayMapTypes.push(imageMapType);
+      
+    }
+  }
+
+  static getImageMapType(urlFormat, opacity = 1.0, name = "Clipped Image") {
+    return new window.google.maps.ImageMapType({
+      getTileUrl: function (tile, zoom) {
+        return urlFormat
+          .replace("{z}", zoom)
+          .replace("{x}", tile.x)
+          .replace("{y}", tile.y);
+      },
+      tileSize: new window.google.maps.Size(256, 256),
+      name: name,
+      opacity: opacity,
+    });
+  }
+
+  static getPolygonCenter(polygon) {
+    var bounds = new window.google.maps.LatLngBounds();
+
+    if (polygon.getBounds) {
+      return polygon.getBounds().getCenter();
+    } else {
+      polygon.getPath().forEach(function (point, index) {
+        bounds.extend(point);
+      });
+    }
+
+    return bounds.getCenter();
+  }
 }
-
-
 
 export default MapUtils;

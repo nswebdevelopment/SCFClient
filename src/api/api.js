@@ -77,16 +77,6 @@ function ApiManager() {
     });
   }
 
-  function getProjectParcels(projectId) {
-    console.log("getProjectParcels", projectId);
-    const project = projects.find((project) => project.id === projectId);
-    // return project.parcels;
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(project.parcels), 1000); // Simulate a delay of 1 second
-    });
-  }
-
   //PROJECTS END
 
   //PARCELS START
@@ -124,7 +114,20 @@ function ApiManager() {
     }
 
     return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(true), 1000); // Simulate a delay of 1 second
+      setTimeout(() => resolve(parcel.id), 1000); // Simulate a delay of 1 second
+    });
+  }
+
+
+  function fetchParcels(projectId) {
+    console.log("getProjectParcels", projects, projectId);
+    const project = projects.find((project) => project.id === projectId);
+    // return project.parcels;
+
+    // if (project===null) return [];
+    console.log("fetchParcels", project.name);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => resolve(project.parcels), 1000); // Simulate a delay of 1 second
     });
   }
 
@@ -135,11 +138,10 @@ function ApiManager() {
     fetchProject,
     addProject,
     addParcelToProject,
-    getProjectParcels,
     removeParcel,
     removeProject,
-    getUserDetails,
-  };
+    fetchParcels,
+    getUserDetails,  };
 }
 
 // const api = createApi();

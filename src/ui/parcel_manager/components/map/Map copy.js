@@ -2,61 +2,37 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   GoogleMap,
   LoadScript,
-  DrawingManager,
-  OverlayView,
 } from "@react-google-maps/api";
-import Parcel from "../models/Parcel";
-import { useModal } from "./SaveParcelModal";
-import { useExportModal } from "./ExportParcels";
-import FullScreenLoader from "../components/loader/Loader";
-import MapUtils from "../utils/mapUtils";
-import { baseUrl } from "../utils/constants";
-import mapStyle from "../styles/MapStyles";
-import api from "../api/api";
+import Parcel from "../../../../models/Parcel";
+import { useModal } from "../popup_save/SaveParcelModal";
+import { useExportModal } from "../popup_export/ExportParcels";
+import FullScreenLoader from "../../../../components/loader/Loader";
+import MapUtils from "../../../../utils/mapUtils";
+import { baseUrl } from "../../../../utils/constants";
+import "./MapStyles.css";
+import api from "../../../../api/api";
+import MapOptions from "./map_options/MapOptions";
+import PopupShapeChange from "./popup_save_shape_changes/PopupShapeChange";
+import CustomDrawingManager from "./drawing_manager/CustomDrawingManager";
 
 function Map(props) {
   const [loading, setIsLoading] = useState(false);
   const [map, setMap] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [libraries] = useState(["drawing", "geometry", "places"]);
-  const [lat, setLat] = useState(0);
-  const [lng, setLng] = useState(0);
+
   const [showInfoWindow, setShowInfoWindow] = useState(false);
   const [infoWindowPosition, setInfoWindowPosition] = useState(null);
   const [initialPolygonState, setInitialPolygonState] = useState(null);
-  const [placeName, setPlaceName] = useState("");
 
-  const placesServiceRef = useRef(null);
   const parcelsRef = useRef();
 
   const { openModal } = useModal();
   const { openExportModal } = useExportModal();
 
-  const [isOptionsVisible, setOptionsIsVisible] = useState(false);
-
   parcelsRef.current = props.parcels;
 
-  // Add a new function to search for a location by name
-  const searchLocation = () => {
-    console.log("Searching for location:", placeName);
-    if (placesServiceRef.current && placeName) {
-      placesServiceRef.current.textSearch(
-        { query: placeName },
-        (results, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            // Move the map to the first result
-            MapUtils.updateCenter(
-              map,
-              results[0].geometry.location.lat(),
-              results[0].geometry.location.lng()
-            );
-          } else {
-            console.error("Places search failed:", status);
-          }
-        }
-      );
-    }
-  };
+  const [placesService, setPlacesService] = useState(null);
 
   const addOverlaysForParcel = React.useCallback(
     (parcel) => {
@@ -87,7 +63,7 @@ function Map(props) {
   useEffect(() => {
     if (props.removedParcel) {
       console.log("Removing parcel:", props.removedParcel);
-      props.removedParcel.polygon.setMap(null);
+      props.removedParcel.shape.setMap(null);
       clearOverlayForParcel(props.removedParcel);
       props.addParcel((prevParcels) =>
         prevParcels.filter((parcel) => parcel.id !== props.removedParcel.id)
@@ -100,7 +76,8 @@ function Map(props) {
       return;
     }
 
-    placesServiceRef.current = new window.google.maps.places.PlacesService(map);
+    setPlacesService(new window.google.maps.places.PlacesService(map));
+  
     MapUtils.centerToCurrentLocation(map);
     map.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
     console.log("Google Maps API has loaded");
@@ -166,7 +143,7 @@ function Map(props) {
 
   useEffect(() => {
     if (props.editParcel != null) {
-      console.log("Edit Parcel:", props.editParcel.polygon);
+      console.log("Edit Parcel:", props.editParcel.shape);
 
       openModal(
         props.editParcel.name,
@@ -184,7 +161,7 @@ function Map(props) {
             ) {
               clearOverlayForParcel(props.editParcel);
 
-              const vertices = getVertices(props.editParcel.polygon);
+              const vertices = MapUtils.getVertices(props.editParcel.shape);
               fetchCoverTypes(vertices, parcel.selectedTypes, (data) => {
                 props.editParcel.imageUrl = data["urlFormat"];
                 props.editParcel.urlFormat = data["urlFormat"];
@@ -259,7 +236,7 @@ function Map(props) {
 
   useEffect(() => {
     if (props.selectedParcel && map) {
-      const shape = props.selectedParcel.polygon;
+      const shape = props.selectedParcel.shape;
       const bounds = getBoundsOfShape(shape);
       saveCurrentShapeState(shape);
 
@@ -286,7 +263,7 @@ function Map(props) {
 
   // Add a new function to handle the "Cancel" button click
   function handleShapeChangeCancel() {
-    const shape = props.selectedParcel.polygon;
+    const shape = props.selectedParcel.shape;
 
     if (shape.getBounds) {
       const initialBounds = new window.google.maps.LatLngBounds(
@@ -315,7 +292,7 @@ function Map(props) {
   function handleShapeChangeSave() {
     clearOverlayForParcel(props.selectedParcel);
 
-    const vertices = getVertices(props.selectedParcel.polygon);
+    const vertices = MapUtils.getVertices(props.selectedParcel.shape);
 
     fetchCoverTypes(vertices, props.selectedParcel.coverTypes, (data) => {
       props.selectedParcel.imageUrl = data["urlFormat"];
@@ -349,7 +326,7 @@ function Map(props) {
       setIsLoading(false);
     });
 
-    saveCurrentShapeState(props.selectedParcel.polygon);
+    saveCurrentShapeState(props.selectedParcel.shape);
     setShowInfoWindow(false);
   }
 
@@ -365,42 +342,10 @@ function Map(props) {
 
       return bounds;
     }
-
     return null;
   }
 
-  function getVertices(shape) {
-    console.log("Shape:", shape);
 
-    if (shape.getBounds) {
-      const bounds = shape.getBounds();
-
-      // Get the North East and South West points
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
-
-      // Create an array of the four corner points
-      const path = [
-        new window.google.maps.LatLng(ne.lat(), ne.lng()), // North East,
-        new window.google.maps.LatLng(ne.lat(), sw.lng()), // North West,
-        new window.google.maps.LatLng(sw.lat(), sw.lng()), // South West,
-        new window.google.maps.LatLng(sw.lat(), ne.lng()), // South East
-      ];
-
-      console.log("Rectangle bounds:", path);
-
-      // Return the path
-      return path;
-    } else if (shape.getPath) {
-      console.log("Polygon");
-
-      const path = shape.getPath().getArray();
-      console.log("Rectangle bounds:", path);
-      return path;
-    }
-
-    return null;
-  }
 
   function getImageMapType(urlFormat, opacity = 1.0, name = "Clipped Image") {
     return new window.google.maps.ImageMapType({
@@ -418,14 +363,8 @@ function Map(props) {
 
   function fetchCoverTypes(vertices, types, callback) {
     setIsLoading(true);
-
-    // Access the vertices of the polygon
-
-    // const area = window.google.maps.geometry.spherical.computeArea(vertices);
     const lngLatArray = [];
     const latLngArray = [];
-
-    // console.log("selectedTypes:", selectedTypes);
 
     vertices.forEach((vertex) => {
       console.log({ lat: vertex.lat(), lng: vertex.lng() });
@@ -456,7 +395,7 @@ function Map(props) {
   }
 
   function createPolygon(polygon, selectedTypes, name, desc) {
-    const vertices = getVertices(polygon);
+    const vertices = MapUtils.getVertices(polygon);
     fetchCoverTypes(vertices, selectedTypes, (data) => {
       const newParcel = new Parcel(
         props.parcels.length,
@@ -507,9 +446,6 @@ function Map(props) {
           );
         }
         console.log("Modal closed without saving.");
-        // setIsCreatingPolygon(false);
-
-        // polygon.setMap(null);
       },
       () => {
         console.log("Modal closed without saving.");
@@ -551,8 +487,6 @@ function Map(props) {
       props.parcels,
       (data) => {
         if (data && data.parcels.length > 0) {
-          console.log("Exporting parcels:", data.parcels);
-
           MapUtils.exportToKML(data.parcels);
         }
       },
@@ -563,7 +497,7 @@ function Map(props) {
   };
 
   return (
-    <div style={mapStyle.containerStyle}>
+    <div className="containerStyle">
       {loading ? <FullScreenLoader /> : null}
       <LoadScript
         googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
@@ -571,7 +505,7 @@ function Map(props) {
         preventGoogleFontsLoading={false}
       >
         <GoogleMap
-          mapContainerStyle={mapStyle.containerStyle}
+          mapContainerStyle={ { height: 'calc(100vh - 80px)', width: "100%" }}
           zoom={MapUtils.initialZoom}
           center={MapUtils.initialCenter}
           onLoad={onMapLoaded}
@@ -594,139 +528,28 @@ function Map(props) {
               MapUtils.drawPolygonsOnMap(map, parcel, () => {
                 props.setSelectedParcel(parcel);
               });
-              // console.log(parcel.name);
               return null; // Add a return statement here
             })}
 
           {mapLoaded && (
-            <DrawingManager
-              options={{
-                drawingControl: true,
-                drawingControlOptions: {
-                  position: window.google.maps.ControlPosition.TOP_CENTER,
-                  drawingModes: [
-                    window.google.maps.drawing.OverlayType.POLYGON,
-                    // window.google.maps.drawing.OverlayType.CIRCLE,
-                    window.google.maps.drawing.OverlayType.RECTANGLE,
-                    //   window.google.maps.drawing.OverlayType.POLYLINE,
-                    //   window.google.maps.drawing.OverlayType.MARKER,
-                  ],
-                },
-                polygonOptions: {
-                  editable: false,
-                  fillColor: "lightblue",
-                  fillOpacity: 0.0,
-                  strokeColor: "grey",
-                  strokeOpacity: 1,
-                  strokeWeight: 2,
-                },
-
-                rectangleOptions: {
-                  editable: false,
-                  fillColor: "lightblue",
-                  fillOpacity: 0.0,
-                  strokeColor: "grey",
-                  strokeOpacity: 1,
-                  strokeWeight: 2,
-                },
-              }}
-              onPolygonComplete={handlePolygonComplete}
-              onRectangleComplete={handlePolygonComplete}
-            />
+            <CustomDrawingManager 
+            onComplete={handlePolygonComplete}/>
           )}
           {showInfoWindow && (
-            <OverlayView
-              position={infoWindowPosition}
-              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-            >
-              <div>
-                <button
-                  style={{ width: "100px" }}
-                  onClick={handleShapeChangeSave}
-                >
-                  Save
-                </button>
-                <button
-                  style={{ width: "100px" }}
-                  onClick={handleShapeChangeCancel}
-                >
-                  Cancel
-                </button>
-              </div>
-            </OverlayView>
+              <PopupShapeChange
+                position={infoWindowPosition}
+                onSave={handleShapeChangeSave}
+                onCancel={handleShapeChangeCancel}
+              />
           )}
         </GoogleMap>
 
-        <div style={mapStyle.locationOptions}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
-          >
-            <button
-              style={{ width: "30px" }}
-              onClick={() => setOptionsIsVisible(!isOptionsVisible)}
-            >
-              {isOptionsVisible ? "▲" : "▼"}
-            </button>
-          </div>
-
-          <div className={`slideToggle ${isOptionsVisible ? "open" : ""}`}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="text"
-                value={placeName}
-                onChange={(e) => setPlaceName(e.target.value)}
-                placeholder="Place Name"
-              />
-              <button
-                style={{ width: "40px", height: "100%" }}
-                onClick={searchLocation}
-              >
-                Go
-              </button>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="number"
-                onChange={(e) => setLat(e.target.value)}
-                placeholder="Latitude"
-              />
-              <input
-                type="number"
-                onChange={(e) => setLng(e.target.value)}
-                placeholder="Longitude"
-              />
-
-              <button
-                style={{ width: "40px" }}
-                onClick={() => MapUtils.updateCenter(map, lat, lng)}
-              >
-                Go
-              </button>
-            </div>
-
-            <div>
-              <button onClick={() => MapUtils.centerToCurrentLocation(map)}>
-                Center to Current Location
-              </button>
-            </div>
-
-            <div>
-              <button
-                id="exportButton"
-                onClick={exportToKml}
-                disabled={props.parcels.length === 0}
-              >
-                Export to KML
-              </button>
-            </div>
-            {/* Your existing code */}
-          </div>
-        </div>
+        <MapOptions 
+        isVisible={props.parcels.length > 0}
+        map = {map}
+        placesService={placesService}
+        exportCallback = {exportToKml}
+        />
       </LoadScript>
     </div>
   );

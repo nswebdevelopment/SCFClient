@@ -9,10 +9,10 @@ export function ModalProvider({ children }) {
 
   const [parcelName, setParcelName] = useState("");
   const [parcelDesc, setParcelDesc] = useState("");
-  // const landCoverTypes = ['Forest', 'Grassland', 'Wetland', 'Urban', 'Agriculture'];
   const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
-  const { landCoverNames } = require("../utils/constants");
+  const { landCoverNames } = require("../../../../utils/constants");
 
   const openModal = (initialName, initialDesc = '', types = [], saveCallback, cancelCallback) => {
     setIsOpen(true);
@@ -21,6 +21,7 @@ export function ModalProvider({ children }) {
     setParcelName(initialName);
     setParcelDesc(initialDesc);
     setSelectedTypes(types);
+    setSelectAll(types.length === Object.keys(landCoverNames).length);
     console.log("Modal opened", types);
   };
 
@@ -42,7 +43,7 @@ export function ModalProvider({ children }) {
     console.log("Modal cancelled");
   };
 
-  const [selectAll, setSelectAll] = useState(false);
+
 
   const handleSelectAllChange = (e) => {
     setSelectAll(e.target.checked);

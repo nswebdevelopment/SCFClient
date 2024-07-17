@@ -4,12 +4,12 @@ import React from 'react';
 import Navbar from './components/navigation/Navbar';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/home/HomePage';
-import Projects from './pages/projects/ProjectManager';
-import ParcelManager from './pages/ParcelManager';
-import LoginPage from './pages/login/LoginPage';
-import TeamPage from './pages/team/TeamPage';
-import SupportPage from './pages/support/SupportPage';
+import HomePage from './ui/home/HomePage';
+import Projects from './ui/projects/ProjectManager';
+import ParcelManager from './ui/parcel_manager/ParcelManager';
+import LoginPage from './ui/login/LoginPage';
+import TeamPage from './ui/team/TeamPage';
+import SupportPage from './ui/support/SupportPage';
 
 
 

@@ -23,10 +23,8 @@ function LoginPage() {
   }, []);
 
   const loggedIn = () => {
-    console.log("logged in");
     navigate('/home');
   };
-
 
   const onLoginError = () => {
     setError(UserStore.getError());

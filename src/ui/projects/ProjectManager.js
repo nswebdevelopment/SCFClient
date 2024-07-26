@@ -1,43 +1,39 @@
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useReducer, useEffect } from "react";
 import "./ProjectManager.css";
 import NewProjectPopup from "./components/NewProjectPopup";
 
 import ProjectStore from "../../stores/ProjectStore";
+import  AppStore from '../../stores/AppStore';
 import { ProjectActions } from "../../actions/ProjectActions";
 import FullScreenLoader from "../../components/loader/Loader";
 
+import {  projectManagerReducer, initialState, setProjects, setShowPopup, setLoader  } from "../../reducers/projectManagerReducer";
+
 function ProjectManager() {
   const navigate = useNavigate();
-  const [projects, setProject] = useState(ProjectStore.getAll());
-  const [showPopup, setShowPopup] = useState(false);
-  const [loader, setLoader] = useState(false);
+  const [state, dispatch] = useReducer(projectManagerReducer, initialState);
 
-  const nextProjectId = projects.length + 1;
-  const handleClose = () => setShowPopup(false);
-
-  useEffect(() => {
-    ProjectStore.on("change", updateProjects);
-    ProjectStore.on("showLoader", showLoader);
-    ProjectStore.on("hideLoader", hideLoader);
-    return () => {
-      ProjectStore.removeListener("change", updateProjects);
-      ProjectStore.removeListener("showLoader", showLoader);
-      ProjectStore.removeListener("hideLoader", hideLoader);
-    };
-  }, []);
+  const nextProjectId = state.projects.length + 1;
+  const handleClose = () => dispatch(setShowPopup(false));
 
   const updateProjects = () => {
-    setProject([...ProjectStore.getAll()]);
-    setLoader(false);
+    console.log("ProjectManager updateProjects", ProjectStore.getAll());
+    dispatch(setProjects([...ProjectStore.getAll()]));
+    dispatch(setLoader(false));
   };
 
   const showLoader = () => {
-    setLoader(true);
+    dispatch(setLoader(true));
   };
 
   const hideLoader = () => {
-    setLoader(false);
+    dispatch(setLoader(false));
+  };
+
+  const handleProjectRemoval = (event, project) => {
+    event.stopPropagation();
+    handleRemoveProject(project);
   };
 
   const handleRemoveProject = (project) => {
@@ -50,14 +46,39 @@ function ProjectManager() {
     if (projectName) {
       ProjectActions.addProject(projectName);
     }
-
     handleClose();
   };
 
+  const handleShowPopup = () => {
+    dispatch(setShowPopup(true));
+  };
+
+  const onError = (error) => {
+
+    // console.log("Errorrrrrrrrr:", error.message);
+    alert("Error: " + error);
+    // console.log("Errorrrrrrrrr:", error);
+  }
+
+  useEffect(() => {
+    ProjectStore.on("change", updateProjects);
+    AppStore.on("showLoader", showLoader);
+    AppStore.on("hideLoader", hideLoader);
+    AppStore.on("error", onError);
+
+    ProjectActions.fetchProjects();
+    return () => {
+      ProjectStore.removeListener("change", updateProjects);
+      AppStore.removeListener("showLoader", showLoader);
+      AppStore.removeListener("hideLoader", hideLoader);
+      AppStore.removeListener("error", onError);
+    };
+  }, []);
+
   return (
     <div className="project-container">
-      {loader ? <FullScreenLoader /> : null}
-      {projects.map((project) => (
+      {state.loader ? <FullScreenLoader /> : null}
+      {state.projects.map((project) => (
         <div
           key={project.id}
           className="project"
@@ -73,8 +94,7 @@ function ProjectManager() {
           <button
             className={"red"}
             onClick={(event) => {
-              event.stopPropagation();
-              handleRemoveProject(project);
+              handleProjectRemoval(event, project);
             }}
           >
             Remove
@@ -82,20 +102,14 @@ function ProjectManager() {
         </div>
       ))}
 
-      {showPopup && (
+      {state.showPopup ? (
         <NewProjectPopup
           id={nextProjectId}
           addNewProject={handleAddProject}
           onClose={handleClose}
         />
-      )}
-      {!showPopup && (
-        <div
-          className="newProject"
-          onClick={() => {
-            setShowPopup(true);
-          }}
-        >
+      ) : (
+        <div className="newProject" onClick={handleShowPopup}>
           <h2>Add New Project</h2>
         </div>
       )}

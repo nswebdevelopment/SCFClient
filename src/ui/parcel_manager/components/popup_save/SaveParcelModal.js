@@ -153,7 +153,7 @@ export function ModalProvider({ children }) {
                 onClick={() => {
                   onSave({
                     name: document.getElementById("parcelName").value,
-                    desc: document.getElementById("parcelDescription").value,
+                    description: document.getElementById("parcelDescription").value,
                     selectedTypes: selectedTypes,
                   });
                   closeModal();

@@ -10,8 +10,7 @@ import ParcelManager from './ui/parcel_manager/ParcelManager';
 import LoginPage from './ui/login/LoginPage';
 import TeamPage from './ui/team/TeamPage';
 import SupportPage from './ui/support/SupportPage';
-
-
+import { Navigate } from 'react-router-dom';
 
 function App() {
 
@@ -19,7 +18,7 @@ function App() {
 
     <Router>
       <Routes>
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/" element={localStorage.getItem('accessToken') ? <Navigate to="/home" /> : <LoginPage />} />
         <Route path="/home" element={<><Navbar /><HomePage /></>} />
         <Route path="/projects" element={<><Navbar /><Projects /></>} />
         <Route path="/projects/:projectId" element={<><Navbar /><ParcelManager /></>} />

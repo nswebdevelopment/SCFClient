@@ -2,14 +2,23 @@ class MapUtils {
   static initialCenter = { lat: 0, lng: 0 };
   static initialZoom = 2;
   
-  
+  static createPlacemark(coordinates) {
+    return `
+      <Placemark>
+        <Point>
+          <coordinates>${coordinates},0</coordinates>
+        </Point>
+      </Placemark>
+    `;
+  }
   
   static exportToKML(parcels) {
     console.log("export to kml", parcels.length);
-    let kml =
-      '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
-      "<Document>\n";
+    let kml = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <kml xmlns="http://www.opengis.net/kml/2.2">
+      <Document>
+    `;
     parcels.forEach((parcel) => {
       kml += MapUtils.convertShapeToKML(parcel.shape);
     });
@@ -22,22 +31,10 @@ class MapUtils {
     let kml = "";
     if (shape instanceof window.google.maps.Marker) {
       const position = shape.getPosition();
-      kml +=
-        "<Placemark>\n" +
-        "<Point>\n" +
-        `<coordinates>${position.lng()},${position.lat()},0</coordinates>\n` +
-        "</Point>\n" +
-        "</Placemark>\n";
+      kml += MapUtils.createPlacemark(`${position.lng()},${position.lat()}`);
     } else if (shape instanceof window.google.maps.Circle) {
       const center = shape.getCenter();
-      const radius = shape.getRadius();
-      kml +=
-        "<Placemark>\n" +
-        "<Circle>\n" +
-        `<center>${center.lng()},${center.lat()},0</center>\n` +
-        `<radius>${radius}</radius>\n` +
-        "</Circle>\n" +
-        "</Placemark>\n";
+      kml += MapUtils.createPlacemark(`${center.lng()},${center.lat()}`);
     } else if (
       shape instanceof window.google.maps.Polygon ||
       shape instanceof window.google.maps.Polyline
@@ -98,8 +95,6 @@ class MapUtils {
 
     document.body.removeChild(element);
   }
-
-
 
   static centerToCurrentLocation(map) {
     if (navigator.geolocation && map) {

@@ -10,41 +10,40 @@ export const ActionTypes = {
   HIDE_LOADER: "HIDE_LOADER",
 };
 
-
-
-
 export const UserActions = {
-  login: (username, password) => {
+  login: (username, password, ) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
     api
-      .login(username, password)
-      .then((data) => {
+      .login(username, password, (response)=>{
+        console.log("login data", response);
+       
         Dispatcher.dispatch({
           type: ActionTypes.LOGIN,
-          payload: data,
+          payload: response,
         });
-
         Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
 
 
         Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
-        api.getUserDetails().then((data) => {
+        api.getUserDetails((response) => {
           Dispatcher.dispatch({
             type: ActionTypes.GET_USER,
-            payload: data,
+            payload: response,
           });
           Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
+        }, (error) => {
+          Dispatcher.dispatch({
+            type: ActionTypes.ERROR,
+            payload: error.message,
+          });
         });
-
-
-      })
-      .catch((error) => {
-        // If login fails, you can show an error message here
+        
+      }, (error)=>{
         Dispatcher.dispatch({
           type: ActionTypes.ERROR,
           payload: error.message,
         });
-      });
+      })
   },
 
   getUserDetails: () => {

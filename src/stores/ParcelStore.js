@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 import Dispatcher from "../dispatcher/Dispatcher";
 import { ActionTypes } from "../actions/ParcelActions";
 import Parcel from "../models/Parcel";
+import { landCoverColors } from ".././/utils/constants";
 
 class ParcelStore extends EventEmitter {
   constructor() {
@@ -29,6 +30,77 @@ class ParcelStore extends EventEmitter {
     return this.isLoading;
   }
 
+  parseParcel(parcel) {
+    const savedCoordinates = parcel.coordinates.map((coord) => {
+      return { lat: coord[1], lng: coord[0] };
+    });
+
+    var groundTotal = 0;
+
+    const array = Object.entries(parcel.groundTypes).map(([key, value]) => ({
+      key,
+      value,
+    }));
+    const areas = array.map((coverType) => {
+      groundTotal += coverType.value;
+
+      return {
+        area: coverType.value,
+        color: landCoverColors[coverType.key],
+        land_cover_name: coverType.key,
+      };
+    });
+
+    const coverTypes = array.map((coverType) => {
+      return parseInt(coverType.key);
+    });
+
+    console.log("array", array);
+
+    console.log("+++++++type_is_rectangle", parcel.isRectangle);
+
+    let shape;
+    if (parcel.isRectangle) {
+      var bounds = new window.google.maps.LatLngBounds(
+        new window.google.maps.LatLng(savedCoordinates[1]), // southwest corner
+        new window.google.maps.LatLng(savedCoordinates[3]) // northeast corner
+      );
+
+      shape = new window.google.maps.Rectangle({
+        bounds: bounds,
+        editable: false,
+        fillOpacity: 0.0,
+        strokeColor: "white",
+        strokeOpacity: 1,
+        strokeWeight: 2,
+      });
+    } else {
+      shape = new window.google.maps.Polygon({
+        paths: savedCoordinates,
+        editable: false,
+        fillOpacity: 0.0,
+        strokeColor: "white",
+        strokeOpacity: 1,
+        strokeWeight: 2,
+      });
+    }
+
+    const newParcel = new Parcel(
+      parcel.id,
+      parcel.name,
+      parcel.description,
+      groundTotal,
+      shape,
+      parcel.imageUrl,
+      areas,
+      parcel.parcelArea,
+      parcel.totalArea,
+      coverTypes
+    );
+
+    return newParcel;
+  }
+
   handleActions(action) {
     switch (action.type) {
       case ActionTypes.SET_PROJECT_ID:
@@ -37,51 +109,13 @@ class ParcelStore extends EventEmitter {
 
       case ActionTypes.FETCH_PARCELS:
         this.parcels = [];
+
         console.log("FETCH_PARCELS", action.payload);
         action.payload.map((parcel) => {
-          const savedCoordinates = JSON.parse(parcel.coordinates);
-
-          let shape;
-          if (parcel.shapeType === "rectangle") {
-            var bounds = new window.google.maps.LatLngBounds(
-              new window.google.maps.LatLng(savedCoordinates[1]), // southwest corner
-              new window.google.maps.LatLng(savedCoordinates[3]) // northeast corner
-            );
-
-            shape = new window.google.maps.Rectangle({
-              bounds: bounds,
-              editable: false,
-              fillOpacity: 0.0,
-              strokeColor: "white",
-              strokeOpacity: 1,
-              strokeWeight: 2,
-            });
-          } else {
-            shape = new window.google.maps.Polygon({
-              paths: savedCoordinates,
-              editable: false,
-              fillOpacity: 0.0,
-              strokeColor: "white",
-              strokeOpacity: 1,
-              strokeWeight: 2,
-            });
-          }
-
-          const newParcel = new Parcel(
-            parcel.id,
-            parcel.name,
-            parcel.desc,
-            parcel.area,
-            shape,
-            parcel.imageUrl,
-            parcel.areas,
-            parcel.parcelArea,
-            parcel.totalArea,
-            parcel.coverTypes
-          );
-
+          const newParcel = this.parseParcel(parcel);
           this.parcels.push(newParcel);
-          return null; // Add a return statement here
+          return this.parseParcel(parcel);
+          // return null; // Add a return statement here
         });
 
         this.emit("parcelsFetched");
@@ -89,15 +123,22 @@ class ParcelStore extends EventEmitter {
         break;
 
       case ActionTypes.ADD_PARCEL:
-        this.parcels.push(action.payload);
-        this.emit("parcelCreated", action.payload);
+        // this.parcels.push(action.payload);
+        const parcelAdded = this.parseParcel(action.payload);
+        this.parcels.push(parcelAdded);
+
+        this.emit("parcelCreated", parcelAdded);
         this.emit("changed");
         break;
+
+      // case ActionTypes.ERROR:
+      //   this.emit("error", action.payload);
+      //   break;
 
       case ActionTypes.UPDATE_PARCEL:
         // this.parcels.push(action.payload);
 
-        const parcel = action.payload;
+        const parcel = this.parseParcel(action.payload);
 
         const parcelIndex = this.parcels.findIndex((p) => p.id === parcel.id);
 
@@ -109,7 +150,7 @@ class ParcelStore extends EventEmitter {
           this.parcels = newParcels;
         }
 
-        this.emit("updateParcel", action.payload);
+        this.emit("updateParcel", parcel);
         this.emit("changed");
         break;
 
@@ -131,15 +172,15 @@ class ParcelStore extends EventEmitter {
         this.emit("editParcel");
         break;
 
-      case ActionTypes.SHOW_LOADER:
-        this.isLoading = true;
-        this.emit("loaderStatusChanged");
-        break;
+      // case ActionTypes.SHOW_LOADER:
+      //   this.isLoading = true;
+      //   this.emit("loaderStatusChanged");
+      //   break;
 
-      case ActionTypes.HIDE_LOADER:
-        this.isLoading = false;
-        this.emit("loaderStatusChanged");
-        break;
+      // case ActionTypes.HIDE_LOADER:
+      //   this.isLoading = false;
+      //   this.emit("loaderStatusChanged");
+      //   break;
 
       case ActionTypes.RESET_STORE:
         this.parcels = [];

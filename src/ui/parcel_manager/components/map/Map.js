@@ -10,6 +10,8 @@ import MapOptions from "./map_options/MapOptions";
 import PopupShapeChange from "./popup_save_shape_changes/PopupShapeChange";
 import CustomDrawingManager from "./drawing_manager/CustomDrawingManager";
 import ParcelStore from "../../../../stores/ParcelStore";
+import AppStore from "../../../../stores/AppStore";
+
 import { ParcelActions } from "../../../../actions/ParcelActions";
 import {
   mapReducer,
@@ -33,27 +35,17 @@ function Map() {
   function onMapLoaded(googleMap) {
     googleMap.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
     dispatch(setMapLoaded(googleMap, true));
+    ParcelActions.fetchParcels(ParcelStore.getProjectId());
   }
 
+  const onError = (error) => {
+    alert(error);
+    // error.shape.setMap(null);
+  };
   // Handle the "Parcels Fetched" event
   const parcelsFetched = () => {
     ParcelStore.getProjectParcels().map((parcel) => {
-      //Draw polugon/rectangle on map and set on click event
-      MapUtils.drawPolygonsOnMap(state.map, parcel, () => {
-        ParcelActions.setSelectedParcel(parcel);
-      });
-
-      //Add event listener for polygon/rectangle edit
-      const handleParcelEdit = () => handlePolygonEdit(parcel.shape);
-      if (parcel.shape.getBounds) {
-        parcel.shape.addListener("bounds_changed", handleParcelEdit);
-      } else if (parcel.shape.getPath) {
-        parcel.shape.getPath().addListener("set_at", handleParcelEdit);
-        parcel.shape.getPath().addListener("insert_at", handleParcelEdit);
-      }
-
-      // Add a new function to add overlays for the parcel
-      MapUtils.addOverlaysForParcel(parcel, state.map);
+      configureParcel(parcel);
       return null;
     });
 
@@ -95,11 +87,11 @@ function Map() {
 
     openModal(
       selectedParcel.name,
-      selectedParcel.desc,
+      selectedParcel.description,
       selectedParcel.coverTypes,
       (parcel) => {
         selectedParcel.name = parcel.name;
-        selectedParcel.desc = parcel.desc;
+        selectedParcel.description = parcel.description;
         // Save the parcel with the entered name and description
         if (parcel) {
           if (
@@ -108,16 +100,12 @@ function Map() {
           ) {
             const vertices = MapUtils.getVertices(selectedParcel.shape);
             ParcelActions.updateParcelLandCover(
-              ParcelStore.getProjectId(),
               selectedParcel,
               vertices,
               parcel.selectedTypes
             );
           } else {
-            ParcelActions.updateParcel(
-              ParcelStore.getProjectId(),
-              selectedParcel
-            );
+            ParcelActions.updateParcel(selectedParcel);
           }
         }
       },
@@ -127,17 +115,19 @@ function Map() {
     );
   };
 
-  const loadingStatusChanged = () => {
-    dispatch(setLoading(ParcelStore.getIsLoading()));
+  const onParcelCreated = (parcel) => {
+    configureParcel(parcel);
+    dispatch(setParcels([...ParcelStore.getProjectParcels()]));
   };
 
-  const onParcelCreated = (parcel) => {
-    parcel.shape.addListener("click", (event) => {
+  function configureParcel(parcel) {
+    //Draw polugon/rectangle on map and set on click event
+    MapUtils.drawPolygonsOnMap(state.map, parcel, () => {
       ParcelActions.setSelectedParcel(parcel);
     });
 
+    //Add event listener for polygon/rectangle edit
     const handleParcelEdit = () => handlePolygonEdit(parcel.shape);
-
     if (parcel.shape.getBounds) {
       parcel.shape.addListener("bounds_changed", handleParcelEdit);
     } else if (parcel.shape.getPath) {
@@ -145,15 +135,15 @@ function Map() {
       parcel.shape.getPath().addListener("insert_at", handleParcelEdit);
     }
 
+    // Add a new function to add overlays for the parcel
     MapUtils.addOverlaysForParcel(parcel, state.map);
-  };
+  }
 
   //Handle the "Parcel Updated" event
   const onParcelUpdated = (parcel) => {
     MapUtils.clearOverlayForParcel(state.map, parcel.id);
-    MapUtils.addOverlaysForParcel(parcel, state.map);
+    configureParcel(parcel);
   };
-  
 
   useEffect(() => {
     if (state.mapLoaded === false) return;
@@ -167,9 +157,11 @@ function Map() {
     ParcelStore.on("parcelRemoved", parcelRemoved);
     ParcelStore.on("selectedParcel", selectedParcelChanged);
     ParcelStore.on("editParcel", openEditModal);
-    ParcelStore.on("loaderStatusChanged", loadingStatusChanged);
     ParcelStore.on("parcelCreated", onParcelCreated);
     ParcelStore.on("updateParcel", onParcelUpdated);
+    AppStore.on("error", onError);
+    AppStore.on("showLoader", showLoader);
+    AppStore.on("hideLoader", hideLoader);
 
     // Cleanup
     return () => {
@@ -177,17 +169,25 @@ function Map() {
       ParcelStore.removeListener("parcelRemoved", parcelRemoved);
       ParcelStore.removeListener("selectedParcel", selectedParcelChanged);
       ParcelStore.removeListener("editParcel", openEditModal);
-      ParcelStore.removeListener("loaderStatusChanged", loadingStatusChanged);
       ParcelStore.removeListener("parcelCreated", onParcelCreated);
       ParcelStore.removeListener("updateParcel", onParcelUpdated);
+      AppStore.removeListener("error", onError);
+      AppStore.removeListener("showLoader", showLoader);
+      AppStore.removeListener("hideLoader", hideLoader);
     };
   }, [state.mapLoaded]);
 
   const handleMapUnmount = React.useCallback(function callback(map) {
     dispatch(setMapLoaded(null, false));
-    
   }, []);
 
+  const showLoader = () => {
+    dispatch(setLoading(true));
+  };
+
+  const hideLoader = () => {
+    dispatch(setLoading(false));
+  };
 
   function setShapeBounds(shape, initialBounds) {
     shape.setBounds(initialBounds);
@@ -233,7 +233,6 @@ function Map() {
     const selectedParcel = ParcelStore.getSelectedParcel();
     const vertices = MapUtils.getVertices(selectedParcel.shape);
     ParcelActions.updateParcelLandCover(
-      ParcelStore.getProjectId(),
       selectedParcel,
       vertices,
       selectedParcel.coverTypes
@@ -259,8 +258,7 @@ function Map() {
             parcel.desc,
             polygon
           );
-        }
-        else{
+        } else {
           alert("You must select at least one land cover type.");
           polygon.setMap(null);
         }

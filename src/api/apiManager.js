@@ -8,7 +8,7 @@ function useApiManager() {
 
   // Create an axios instance with the Authorization header
   const api = axios.create({
-    baseURL: "https://dummyjson.com/",
+    baseURL: "http://localhost:5064/",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       "Content-Type": "application/json",
@@ -38,10 +38,10 @@ api.interceptors.request.use((request) => {
   api.interceptors.response.use(
     (response) => {
         console.log("call:", response.request.responseURL, response.config.data?? '', 'response:', response.data);
-    
       return response;
     },
     async (error) => {
+      console.log("errorApiManager", error.response);
       if (error.response.status === 401) {
         const originalRequest = error.config;
         if (!isRefreshing) {
@@ -76,7 +76,7 @@ api.interceptors.request.use((request) => {
           });
       }
 
-      return Promise.reject(error);
+      return error;
     }
   );
 
@@ -92,7 +92,7 @@ api.interceptors.request.use((request) => {
   }
 
   function setToken(token, refresh) {
-    console.log("updatedToken");
+    console.log("updatedToken: "+token);
     localStorage.setItem("access_token", token);
     localStorage.setItem("refresh_token", refresh);
     api.defaults.headers["Authorization"] = `Bearer ${token}`;

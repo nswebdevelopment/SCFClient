@@ -16,8 +16,24 @@ export const ActionTypes = {
   COVER_LAND: "COVER_LAND",
   SHOW_LOADER: "SHOW_LOADER",
   HIDE_LOADER: "HIDE_LOADER",
+  ERROR: "ERROR",
   
 };
+
+
+
+
+function handleError(error) {
+  console.error("Error:", error);
+  Dispatcher.dispatch({
+    type: ActionTypes.ERROR,
+    payload: error,
+  });
+}
+
+function hideLoader() {
+  Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
+}
 
 export const ParcelActions = {
 
@@ -31,68 +47,72 @@ setProjectId: (projectId) => {
   fetchParcels: (projectId) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
 
-    api.fetchParcels(projectId).then((data) => {
+    api.fetchParcels(projectId, (response) =>{
       Dispatcher.dispatch({
         type: ActionTypes.FETCH_PARCELS,
-        payload: data,
+        payload: response,
       });
-      Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
+      hideLoader();
+    }, (error)=>{
+      hideLoader();
+      handleError(error);
     });
   },
+
   addParcel: (projectId, parcel) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
-    api
-      .addParcelToProject(projectId, parcel)
-      .then((data) => {
-        Dispatcher.dispatch({
-          type: ActionTypes.ADD_PARCEL,
-          payload: data,
-        });
-        Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // If login fails, you can show an error message here
-        Dispatcher.dispatch({
-          type: ActionTypes.ERROR,
-          payload: error,
-        });
+    api.createParcel(projectId, parcel, (response)=>{
+      hideLoader();
+      parcel.shape.setMap(null);
+      Dispatcher.dispatch({
+        type: ActionTypes.ADD_PARCEL,
+        payload: response,
       });
+   
+    }, (error)=>{
+      parcel.shape.setMap(null);
+      hideLoader();
+      handleError(error);
+    });
   },
 
-  updateParcel: (projectId, parcel) => {
+  updateParcel: (parcel) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
     api
-      .addParcelToProject(projectId, parcel)
-      .then((data) => {
+      .updateParcel(parcel, 
+        
+        (response)=>{
+        parcel.shape.setMap(null);
+        hideLoader();
         Dispatcher.dispatch({
           type: ActionTypes.UPDATE_PARCEL,
-          payload: data,
+          payload: response,
         });
-        Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // If login fails, you can show an error message here
-        Dispatcher.dispatch({
-          type: ActionTypes.ERROR,
-          payload: error,
-        });
-      });
+      }
+
+      , (error)=>{
+        parcel.shape.setMap(null);
+        hideLoader();
+        handleError(error);
+      }
+
+    );
   },
 
-  removeParcel: (projectId, parcel) => {
+  removeParcel: (parcel) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
 
-    api.removeParcel(projectId, parcel).then((data) => {
-      console.log("removeParcel", data);
+    api.removeParcel(parcel, (response) => {
+      console.log("removeParcel", response);
       parcel.shape.setMap(null);
       Dispatcher.dispatch({
         type: ActionTypes.REMOVE_PARCEL,
-        payload: data,
+        payload: response,
       });
-      Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
-    });
+      hideLoader();
+
+
+    }, (error)=>{});
   },
 
   setSelectedParcel: (parcel) => {
@@ -127,11 +147,13 @@ setProjectId: (projectId) => {
         types
       );
 
+
+      console.log("createParcel", newParcel.shapeType);
       ParcelActions.addParcel(projectId, newParcel);
     });
   },
 
-  updateParcelLandCover: (projectId, parcel, vertices, types)=>{
+  updateParcelLandCover: (parcel, vertices, types)=>{
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
     ParcelActions.getLandCover(vertices, types)
     .then((data) => {
@@ -145,7 +167,7 @@ setProjectId: (projectId) => {
       
       parcel.coordinates = JSON.stringify(MapUtils.getVertices(parcel.shape));
 
-    ParcelActions.updateParcel(projectId, parcel);
+    ParcelActions.updateParcel(parcel);
 
     });
 
@@ -220,4 +242,5 @@ setProjectId: (projectId) => {
       });
     return;
   },
+  
 };

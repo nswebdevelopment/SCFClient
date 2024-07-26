@@ -7,13 +7,13 @@ class ProjectStore extends EventEmitter {
   constructor() {
     super();
     this.projects = [];
-    this.fetchProjects();
   }
 
   async fetchProjects() {
     try {
         api.fetchProject().then((data) => {
             this.projects = [...data];
+            console.log("ProjectStore fetchProject", this.projects);
             this.emit('change');
         });
     } catch (error) {
@@ -27,6 +27,12 @@ class ProjectStore extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
+      case ActionTypes.FETCHED_PROJECTS:
+        console.log("ProjectStore FETCHED_PROJECTS", action.payload);
+        this.projects = [...action.payload];
+        this.emit("change");
+      break;
+
       case ActionTypes.ADD_PROJECT:
         this.projects.push(action.payload);
         this.emit("change");
@@ -35,14 +41,6 @@ class ProjectStore extends EventEmitter {
       case ActionTypes.REMOVE_PROJECT:
         this.projects = this.projects.filter(project => project.id !== action.payload);
         this.emit("change");
-        break;
-
-      case ActionTypes.SHOW_LOADER:
-        this.emit("showLoader");
-        break;
-
-      case ActionTypes.HIDE_LOADER:
-        this.emit("hideLoader");
         break;
 
       default:

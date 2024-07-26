@@ -1,14 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import "./AreaCoverList.css";
 import "./ParcelList.css";
 import ParcelStore from "../../../../stores/ParcelStore";
 import { ParcelActions } from "../../../../actions/ParcelActions";
-
+import {
+  parcelListReducer,
+  initialState,
+  setParcels,
+  setSelectedParcel,
+} from "../../../../reducers/parcelLIstReducer";
+import { landCoverNames } from "../../../../utils/constants";
 
 function ParcelList() {
-  const [selectedParcel, setSelectedParcel] = useState(null);
+  const [state, dispatch] = useReducer(parcelListReducer, initialState);
 
-  const [parcels, setParcels] = useState([]);
+  const selectedParcelChanged = useCallback(() => {
+    dispatch(setSelectedParcel(ParcelStore.getSelectedParcel()));
+  }, []);
+
+  const listChanged = useCallback(() => {
+    dispatch(setParcels([...ParcelStore.getProjectParcels()]));
+  }, []);
 
   useEffect(() => {
     ParcelStore.on("selectedParcel", selectedParcelChanged);
@@ -17,61 +29,40 @@ function ParcelList() {
     return () => {
       ParcelStore.removeListener("selectedParcel", selectedParcelChanged);
       ParcelStore.on("changed", listChanged);
-
     };
   }, []);
 
-  const selectedParcelChanged = () => {
-    setSelectedParcel(ParcelStore.getSelectedParcel());
-  };
-
-
-  const listChanged = () => {
-    console.log("listChanged", ParcelStore.getProjectParcels().length);
-    setParcels([...ParcelStore.getProjectParcels()]);
-  };
-
   return (
     <div className={"listStyle"}>
-      {parcels.map((parcel) => {
+      {state.parcels.map((parcel) => {
         return (
           <div
             key={parcel.id}
             className={"itemStyle"}
-            onClick={() => 
-              ParcelActions.setSelectedParcel(parcel)
-            }
+            onClick={() => ParcelActions.setSelectedParcel(parcel)}
           >
             <h2 className={"titleStyle"}>{parcel.name}</h2>
 
-            <i className={"descStyle"}>{parcel.desc}</i>
+            <i className={"descStyle"}>{parcel.description}</i>
             <p
               className={"areaStyle"}
               dangerouslySetInnerHTML={{
-                __html: `Parcel Area: ${(parcel.parcelArea / 10000).toFixed(
-                  2
-                )}ha`,
-              }}
-            />
-            <p
-              className={"areaStyle"}
-              dangerouslySetInnerHTML={{
-                __html: `Total Area: ${(parcel.totalArea / 10000).toFixed(
+                __html: `Area: ${(parcel.area / 10000).toFixed(
                   2
                 )}ha`,
               }}
             />
 
             <ul>
-              {(selectedParcel
-                ? selectedParcel.id === parcel.id
+              {(state.selectedParcel
+                ? state.selectedParcel.id === parcel.id
                 : false) &&
                 parcel.areas.map((area) => {
                   const areaCovered = area["area"];
                   const landCoverColor = area["color"];
 
                   const percentage = (
-                    (areaCovered / parcel.totalArea) *
+                    (areaCovered / parcel.area) *
                     100
                   ).toFixed(2);
                   return (
@@ -88,7 +79,7 @@ function ParcelList() {
                           display: inline-block;
                           margin-right: 5px;
                         "></div>
-                        ${area["land_cover_name"]}(${percentage}%): ${(
+                        ${landCoverNames[area["land_cover_name"]]}(${percentage}%): ${(
                           areaCovered / 10000
                         ).toFixed(2)}ha`,
                       }}
@@ -96,8 +87,8 @@ function ParcelList() {
                   );
                 })}
             </ul>
-            {(selectedParcel
-              ? selectedParcel.id === parcel.id
+            {(state.selectedParcel
+              ? state.selectedParcel.id === parcel.id
               : false) && (
               <div>
                 <button
@@ -111,7 +102,8 @@ function ParcelList() {
                 <button
                   className="red"
                   onClick={() => {
-                    ParcelActions.removeParcel(ParcelStore.getProjectId(), parcel);
+                    ParcelActions.removeParcel(parcel
+                    );
                   }}
                 >
                   Remove

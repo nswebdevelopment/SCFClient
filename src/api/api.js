@@ -1,4 +1,3 @@
-import Project from "../models/Project";
 import useApiManager from "./apiManager.js";
 
 // const baseUrl = 'http://localhost:3001';
@@ -6,142 +5,228 @@ import useApiManager from "./apiManager.js";
 function ApiManager() {
   const { api, setToken } = useApiManager();
 
+
+  function handleResponse(response, onResponse, onError) {
+      console.log("HANDLE_RESPONSE", response);
+
+      try{
+        if (response.status === 200) {
+          console.log("handleResponse from response", response.data.content.data);
+            onResponse(response.data.content);
+        } 
+        else {
+          console.log("handleError from response", response.response.data.message);
+          onError(response.response.data.message);
+        }
+      }
+      catch(e){
+        console.log("HandleResponse Error", e);
+      }
+   
+  }
+
+  function handleError(error, onError){
+    console.log("HANDLE_ERROR", error);
+    // onError(error.message);
+    onError(error.data.message);
+  }
+
   //AUTHORIZATION START
-  function login(username, password) {
-    return api
-      .post("/auth/login", {
-        username: username,
-        password: password,
-        expiresInMins: 1,
-      })
-      .then((response) => {
-        // The access token is usually located in the response data
-        console.log("login", response);
-        const token = response.data.token;
-        const refreshToken = response.data.refreshToken;
-        // Save the token to localStorage
-        setToken(token, refreshToken);
-        return response.data;
-      });
+  async function login(username, password, onResponse, onError) {
+
+    api
+    .post("/api/Account/login", {
+      username: username,
+      password: password
+    })
+    .then((response) => {
+      console.log("login response", response);
+          
+      const token = response.data.content.acceessToken;
+      const refreshToken = response.data.content.acceessToken;
+    // Save the token to localStorage
+    setToken(token, refreshToken);
+        handleResponse(response, onResponse, onError);
+    })
+    .catch((error) => {
+      console.log("login error", error);
+      handleError(error, onError);
+      throw error;
+    });
+
+
+
+
+    // const response = await api
+    //   .post("/api/Account/login", {
+    //     username: username,
+    //     password: password
+    //   });
+    // // The access token is usually located in the response data
+  
+   
+    // const token = response.content.acceessToken;
+    // const refreshToken = response.content.acceessToken;
+    // // Save the token to localStorage
+    // setToken(token, refreshToken);
+    // return response.data;
   }
   //AUTHORIZATION END
 
   //USER START
-  function getUserDetails(id) {
+  function getUserDetails(onResponse, onError) {
     return api
-      .get("/auth/me", {
-        params: {
-          callId: id,
-        },
-      })
+      .get("/api/Account/myProfile/", {})
       .then((response) => {
-        return response.data;
+        handleResponse(response, onResponse, onError);
       })
       .catch((error) => {
+        handleError(error, onError);
         // throw error; // Throw the error so it can be caught in LoginPage
       });
   }
   //USER END
 
-  //PROJECTS START
-  var projects = [
-    new Project(Math.floor(Math.random() * 1000000), "Project 1", []),
-  ];
-
-  function fetchProject() {
-    // console.log("fetchProject");
-  
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(projects), 1000); // Simulate a delay of 1 second
-    });
+  async function getProjects(onResponse, onError) {
+    return api
+      .get("/api/Project?pageNumber=1&pageSize=100")
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        onError(error);
+      });
   }
 
-  function addProject(projectName) {
-    const newProject = new Project(
-      Math.floor(Math.random() * 1000000),
-      projectName,
-      []
-    );
-    projects.push(newProject);
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(newProject), 1000); // Simulate a delay of 1 second
+  async function addProject(projectName, onResponse, onError) {
+    api
+    .post("/api/Project", {
+      name: projectName,
+      companyId: 1,
+    })
+    .then((response) => {
+        handleResponse(response, onResponse, onError);
+    })
+    .catch((error) => {
+      handleError(error, onError);
+      throw error;
     });
-  }
 
-  function removeProject(projectId) {
-    // projects = projects.filter((p) => p.id !== projectId);
+}
 
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(projectId), 1000); // Simulate a delay of 1 second
-    });
+  async function removeProject(projectId, onResponse, onError) {
+    return api
+      .delete("/api/Project/" + projectId)
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+          handleError(error, onError);
+      });
   }
 
   //PROJECTS END
 
   //PARCELS START
-  function addParcelToProject(projectId, parcel) {
-    console.log("addParcelToProject", projectId, parcel);
-    const project = projects.find((project) => project.id === projectId);
-
-    const parcelIndex = project.parcels.findIndex((p) => p.id === parcel.id);
-
-    console.log("parcelIndex", parcelIndex);
-    if (parcelIndex !== -1) {
-      // If the parcel exists, update it
-      console.log("update parcel", parcel.coordinates);
-      project.parcels[parcelIndex] = parcel;
-    } else {
-      // If the parcel doesn't exist, add it
-      project.parcels.push(parcel);
-    }
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(parcel), 1000); // Simulate a delay of 1 second
+  function createParcel(projectId, parcel, onResponse, onError) {
+    const coords = JSON.parse(parcel.coordinates);
+    const coordinates = coords.map((coord) => {
+      return [coord.lng, coord.lat];
     });
+
+    const groundTypes = parcel.areas.reduce((obj, value, index) => {
+      obj[value.land_cover_name] = value.area;
+      return obj;
+    }, {});
+
+    console.log("groundTypes", groundTypes);
+    console.log("shapeType", parcel.shapeType);
+
+    return api
+      .post("/api/Parcel/", {
+        projectId: projectId,
+        name: parcel.name,
+        description: parcel.description,
+        isRectangle: parcel.shapeType === "rectangle",
+        imageUrl: parcel.imageUrl,
+        coordinates: coordinates,
+        groundTypes: groundTypes,
+      })
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error, onError);
+      });
   }
 
-  function removeParcel(projectId, parcel) {
-    console.log("addParcelToProject", projectId, parcel);
-    const project = projects.find((project) => project.id === projectId);
-
-    const parcelIndex = project.parcels.findIndex((p) => p.id === parcel.id);
-
-    console.log("parcelIndex", parcelIndex);
-    if (parcelIndex !== -1) {
-      // If the parcel exists, remove it
-      project.parcels = project.parcels.filter((p) => p.id !== parcel.id);
-    }
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(parcel.id), 1000); // Simulate a delay of 1 second
+  function updateParcel(parcel, onResponse, onError) {
+    const coords = JSON.parse(parcel.coordinates);
+    const coordinates = coords.map((coord) => {
+      return [coord.lng, coord.lat];
     });
+
+    const groundTypes = parcel.areas.reduce((obj, value, index) => {
+      obj[value.land_cover_name] = value.area;
+      return obj;
+    }, {});
+
+    console.log("groundTypes", groundTypes);
+    console.log("shapeType", parcel.shapeType);
+
+    return api
+      .put("/api/Parcel/", {
+        id: parcel.id,
+        name: parcel.name,
+        description: parcel.description,
+        isRectangle: parcel.shapeType === "rectangle",
+        imageUrl: parcel.imageUrl,
+        coordinates: coordinates,
+        groundTypes: groundTypes,
+      })
+      .then((response) => {
+        console.log("updateParcel", response);
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error);
+      });
   }
 
-
-  function fetchParcels(projectId) {
-    console.log("getProjectParcels", projects, projectId);
-    const project = projects.find((project) => project.id === projectId);
-    // return project.parcels;
-
-    // if (project===null) return [];
-    console.log("fetchParcels", project.name);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => resolve(project.parcels), 1000); // Simulate a delay of 1 second
-    });
+  function removeParcel(parcel, onResponse, onError) {
+    return api
+      .delete("/api/Parcel/" + parcel.id)
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error);
+      });
   }
 
+  function fetchParcels(projectId, onResponse, onError) {
+    return api
+      .get("/project/" + projectId)
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error);
+      });
+  }
   //PARCELS END
 
   return {
     login,
-    fetchProject,
+    getProjects,
     addProject,
-    addParcelToProject,
+    updateParcel,
     removeParcel,
     removeProject,
     fetchParcels,
-    getUserDetails,  };
+    getUserDetails,
+    createParcel,
+  };
 }
 
 // const api = createApi();

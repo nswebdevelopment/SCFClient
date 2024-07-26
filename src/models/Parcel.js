@@ -4,7 +4,7 @@ class Parcel {
   constructor(id, name, desc, area, shape, imageUrl, areas, parcelArea, totalArea, coverTypes) {
     this.id = id;
     this.name = name;
-    this.desc = desc;
+    this.description = desc;
     this.area = area;
     this._shape = shape;
     this.shapeType = MapUtils.getShapeType(this.shape);

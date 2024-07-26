@@ -32,8 +32,11 @@ class UserStore extends EventEmitter {
 
       case ActionTypes.GET_USER:
         this.user = action.payload;
-        console.log("GET_USER", this.users);
-        this.emit("change");
+        console.log("UserStore GET_USER", this.user);
+        if (this.user) {
+          this.emit("change");
+        }
+        
         break;
       default:
       // Do nothing

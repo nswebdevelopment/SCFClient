@@ -1,24 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useParams } from 'react-router-dom';
+
 import ParcelList from "./components/parcel_list/ParcelList";
 import { ModalProvider } from "./components/popup_save/SaveParcelModal";
 import Map from "./components/map/Map";
 import { ExportParcelsModal } from "./components/popup_export/ExportParcels";
-import { useLocation } from 'react-router-dom';
 import { ParcelActions } from "../../actions/ParcelActions";
-import ParcelStore from '../../stores/ParcelStore';
-
 
 function ParcelManager() {
-  const location = useLocation();
   // const [parcelsOfProject, setParcelsOfProject] = useState(null);
+  const { projectId } = useParams(); // replace 'id' with the actual parameter name
+
 
   useEffect(() => {
-    if (location.state) {
-      ParcelActions.setProjectId(location.state.data);
-      // setParcelsOfProject(location.state.data);
-      ParcelActions.fetchParcels(ParcelStore.getProjectId());
-    }
-  }, [location.state]);
+    ParcelActions.setProjectId(projectId);
+  });
 
 
 

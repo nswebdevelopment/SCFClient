@@ -37,6 +37,7 @@ function LoginPage() {
       UserStore.removeListener("change", handleUserLoggedIn);
       UserStore.removeListener("login_error", handleLoginError);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

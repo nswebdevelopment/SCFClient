@@ -175,6 +175,7 @@ function Map() {
       AppStore.removeListener("showLoader", showLoader);
       AppStore.removeListener("hideLoader", hideLoader);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.mapLoaded]);
 
   const handleMapUnmount = React.useCallback(function callback(map) {

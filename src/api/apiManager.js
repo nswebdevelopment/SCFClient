@@ -2,8 +2,8 @@ import axios from "axios";
 
 function useApiManager() {
 
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'http://54.93.96.139/' : 'http://localhost:5064/';
-  // const baseUrl = 'http://54.93.96.139/';
+  // const baseUrl = process.env.NODE_ENV === 'production' ? 'https://scf-api.nswd.eu/' : 'http://localhost:5064/';
+  const baseUrl = 'https://scf-api.nswd.eu/';
   console.log("ApiManager", localStorage);
 
   let isRefreshing = false;

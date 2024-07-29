@@ -53,23 +53,6 @@ function ApiManager() {
       handleError(error, onError);
       throw error;
     });
-
-
-
-
-    // const response = await api
-    //   .post("/api/Account/login", {
-    //     username: username,
-    //     password: password
-    //   });
-    // // The access token is usually located in the response data
-  
-   
-    // const token = response.content.acceessToken;
-    // const refreshToken = response.content.acceessToken;
-    // // Save the token to localStorage
-    // setToken(token, refreshToken);
-    // return response.data;
   }
   //AUTHORIZATION END
 

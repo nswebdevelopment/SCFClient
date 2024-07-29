@@ -1,6 +1,9 @@
 import axios from "axios";
 
 function useApiManager() {
+
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'http://54.93.96.139/' : 'http://localhost:5064/';
+  // const baseUrl = 'http://54.93.96.139/';
   console.log("ApiManager", localStorage);
 
   let isRefreshing = false;
@@ -8,7 +11,7 @@ function useApiManager() {
 
   // Create an axios instance with the Authorization header
   const api = axios.create({
-    baseURL: "http://localhost:5064/",
+    baseURL: baseUrl,
     headers: {
       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       "Content-Type": "application/json",

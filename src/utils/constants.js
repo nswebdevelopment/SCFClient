@@ -1,5 +1,6 @@
 
-const baseUrl = process.env.NODE_ENV === 'production' ? 'https://scfserver.onrender.com' : '';
+// const baseUrl = process.env.NODE_ENV === 'production' ? 'https://scfserver.onrender.com' : '';
+const baseUrl = 'https://scfserver.nswd.eu';
 
 const landCoverNames = {
   10: "Trees",

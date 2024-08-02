@@ -1,6 +1,6 @@
 
-// const baseUrl = process.env.NODE_ENV === 'production' ? 'https://scfserver.onrender.com' : '';
-const baseUrl = 'https://scfserver.nswd.eu';
+const baseUrlGEE = process.env.NODE_ENV === 'production' ? 'https://scfserver.nswd.eu' : '';
+// const baseUrl = 'https://scfserver.nswd.eu';
 
 const landCoverNames = {
   10: "Trees",
@@ -17,20 +17,19 @@ const landCoverNames = {
 };
 
 const landCoverColors = {
-  10: '#1A6401',
+  10: '#358221',
   20: '#F9BA00',
   30: '#FEFE35',
-  40: '#EA96FF',
-  50: '#EF0100',
-  60: '#B4B4B4',
-  70: '#F0F0F0',
-  80: '#2565CB',
+  40: '#FFDB5C',
+  50: '#ED022A',
+  60: '#EDE9E4',
+  70: '#F2FAFF',
+  80: '#1A5BAB',
   90: '#3096A1',
   95: '#43CF71',
   100: '#F8E69D',
 };
 
-
   module.exports = {
-   landCoverNames, landCoverColors, baseUrl
+   landCoverNames, landCoverColors, baseUrl: baseUrlGEE
   };

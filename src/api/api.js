@@ -85,7 +85,6 @@ function ApiManager() {
     api
     .post("/api/Project", {
       name: projectName,
-      companyId: 1,
     })
     .then((response) => {
         handleResponse(response, onResponse, onError);

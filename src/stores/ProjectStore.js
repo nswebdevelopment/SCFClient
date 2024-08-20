@@ -35,7 +35,7 @@ class ProjectStore extends EventEmitter {
 
       case ActionTypes.ADD_PROJECT:
         this.projects.push(action.payload);
-        this.emit("change");
+        this.emit("project_added", action.payload);
         break;
 
       case ActionTypes.REMOVE_PROJECT:

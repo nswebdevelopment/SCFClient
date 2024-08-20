@@ -1,3 +1,5 @@
+import { GoogleMap } from "@react-google-maps/api";
+
 class MapUtils {
   static initialCenter = { lat: 0, lng: 0 };
   static initialZoom = 2;
@@ -14,14 +16,60 @@ class MapUtils {
   
   static exportToKML(parcels) {
     console.log("export to kml", parcels.length);
-    let kml = `
-      <?xml version="1.0" encoding="UTF-8"?>
-      <kml xmlns="http://www.opengis.net/kml/2.2">
-      <Document>
-    `;
+    let kml = "";
+    kml+=`<kml\nxmlns="http://www.opengis.net/kml/2.2"\nxmlns:gx="http://www.google.com/kml/ext/2.2"\nxmlns:kml="http://www.opengis.net/kml/2.2"\nxmlns:atom="http://www.w3.org/2005/Atom">`
+    kml+=`<Document>
+		<gx:CascadingStyle kml:id="__managed_style_2B7092AD9032A49771A7">
+			<Style>
+				<IconStyle>
+					<scale>1.44</scale>
+					<Icon>
+						<href>https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+					</Icon>
+				</IconStyle>
+				<LabelStyle></LabelStyle>
+				<LineStyle>
+					<width>1.5</width>
+				</LineStyle>
+				<PolyStyle>
+					<color>40ffffff</color>
+				</PolyStyle>
+				<BalloonStyle></BalloonStyle>
+			</Style>
+		</gx:CascadingStyle>
+		<gx:CascadingStyle kml:id="__managed_style_100435DADA32A49771A7">
+			<Style>
+				<IconStyle>
+					<scale>1.2</scale>
+					<Icon>
+						<href>https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+					</Icon>
+				</IconStyle>
+				<LabelStyle></LabelStyle>
+				<LineStyle></LineStyle>
+				<PolyStyle>
+					<color>40ffffff</color>
+				</PolyStyle>
+				<BalloonStyle></BalloonStyle>
+			</Style>
+		</gx:CascadingStyle>
+		<StyleMap id="__managed_style_01966AF16532A49771A7">
+			<Pair>
+				<key>normal</key>
+				<styleUrl>#__managed_style_100435DADA32A49771A7</styleUrl>
+			</Pair>
+			<Pair>
+				<key>highlight</key>
+				<styleUrl>#__managed_style_2B7092AD9032A49771A7</styleUrl>
+			</Pair>
+		</StyleMap>`
+
     parcels.forEach((parcel) => {
       kml += MapUtils.convertShapeToKML(parcel.shape);
     });
+
+
+    
     kml += "</Document>\n</kml>";
 
     MapUtils.download("map.kml", kml);
@@ -41,14 +89,18 @@ class MapUtils {
     ) {
       const path = shape.getPath();
       kml += "<Placemark>\n";
+      kml += "<styleUrl>#__managed_style_2B7092AD9032A49771A7</styleUrl>\n";
       if (shape instanceof window.google.maps.Polygon) {
         kml += "<Polygon>\n<outerBoundaryIs>\n<LinearRing>\n<coordinates>\n";
       } else {
         kml += "<LineString>\n<coordinates>\n";
       }
+
       path.forEach((latlng) => {
         kml += `${latlng.lng()},${latlng.lat()},0\n`;
       });
+      kml += `${path.getAt(0).lng()},${path.getAt(0).lat()},0\n`;
+
       if (shape instanceof window.google.maps.Polygon) {
         kml +=
           "</coordinates>\n</LinearRing>\n</outerBoundaryIs>\n</Polygon>\n";
@@ -62,6 +114,7 @@ class MapUtils {
       const sw = bounds.getSouthWest();
       kml +=
         "<Placemark>\n" +
+        "<styleUrl>#__managed_style_2B7092AD9032A49771A7</styleUrl>\n" +
         "<Polygon>\n" +
         "<outerBoundaryIs>\n" +
         "<LinearRing>\n" +
@@ -110,7 +163,42 @@ class MapUtils {
     }
   }
 
+  static centerToCurrentLocationWithPin(map, marker, setMarker) {
+    if (navigator.geolocation && map) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.updateCenter(
+          map,
+          position.coords.latitude,
+          position.coords.longitude
+        );
+
+        if (marker) {
+          marker.setMap(null);
+        }
+
+       const newLatLng = new window.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+       setMarker(new window.google.maps.Marker({
+        position: newLatLng,
+          map: map,
+       }));
+
+
+
+
+      });
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
+  }
+
   static updateCenter(map, lat, lng) {
+    map.setZoom(10);
+    map.panTo({ lat: parseFloat(lat), lng: parseFloat(lng) });
+  }
+
+
+  static updateCenterWithPin(map, lat, lng) {
     map.setZoom(10);
     map.panTo({ lat: parseFloat(lat), lng: parseFloat(lng) });
   }

@@ -8,11 +8,31 @@ import  AppStore from '../../stores/AppStore';
 import { ProjectActions } from "../../actions/ProjectActions";
 import FullScreenLoader from "../../components/loader/Loader";
 
+import { useLocation } from 'react-router-dom';
+
+
 import {  projectManagerReducer, initialState, setProjects, setShowPopup, setLoader  } from "../../reducers/projectManagerReducer";
 
 function ProjectManager() {
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const data = location.state?.data;
+  initialState.showPopup = data;
   const [state, dispatch] = useReducer(projectManagerReducer, initialState);
+  
+  useEffect(() => {
+    window.onbeforeunload = () => {
+      if (data) {
+        navigate(location.pathname, { state: { data: null }, replace: true });
+      }
+    };
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
+
+  
 
   const nextProjectId = state.projects.length + 1;
   const handleClose = () => dispatch(setShowPopup(false));
@@ -21,6 +41,14 @@ function ProjectManager() {
     console.log("ProjectManager updateProjects", ProjectStore.getAll());
     dispatch(setProjects([...ProjectStore.getAll()]));
     dispatch(setLoader(false));
+  };
+
+
+  const projectAdded = (project) => {
+    updateProjects();
+    navigate(`/projects/${project.id}`, {
+      state: { data: project.id },
+    });
   };
 
   const showLoader = () => {
@@ -54,14 +82,12 @@ function ProjectManager() {
   };
 
   const onError = (error) => {
-
-    // console.log("Errorrrrrrrrr:", error.message);
-    alert("Error: " + error);
-    // console.log("Errorrrrrrrrr:", error);
+    alert("Error: " + error);  
   }
 
   useEffect(() => {
     ProjectStore.on("change", updateProjects);
+    ProjectStore.on("project_added", projectAdded);
     AppStore.on("showLoader", showLoader);
     AppStore.on("hideLoader", hideLoader);
     AppStore.on("error", onError);
@@ -69,6 +95,7 @@ function ProjectManager() {
     ProjectActions.fetchProjects();
     return () => {
       ProjectStore.removeListener("change", updateProjects);
+      ProjectStore.removeListener("project_added", projectAdded);
       AppStore.removeListener("showLoader", showLoader);
       AppStore.removeListener("hideLoader", hideLoader);
       AppStore.removeListener("error", onError);

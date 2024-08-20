@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 import { SidebarData } from "./SidebarData";
 import "./Navbar.css";
 import { IconContext } from "react-icons";
-import logo from "../../assets/scf_logo.png"; // replace 'yourLogo.png' with your actual file name
-
+import logo from "../../assets/scf_logo.png";
+import userStore from "../../stores/UserStore"; // Importing the userStore
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
@@ -20,15 +20,16 @@ function Navbar() {
 
   return (
     <IconContext.Provider value={{ color: "#fff" }}>
-      <div className="navbar">
-        <Link to="#" className="menu-bars">
+    <div className="navbar" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', alignContent: 'center'}}>
+        <Link  className="menu-bars">
           <FaIcons.FaBars onClick={showSidebar} />
         </Link>
-
         <img className="logo" src={logo} alt="logo" />
-
-        {/* <h1>{userName}</h1> */}
       </div>
+
+      <h2 style={{ paddingRight: '20px' }}>{localStorage.getItem('user_name')}</h2>
+    </div>
       <nav className={sidebar ? "nav-menu active" : "nav-menu"}>
         <ul className="nav-menu-items" onClick={showSidebar}>
           <li className="navbar-toggle">

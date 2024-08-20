@@ -1,6 +1,14 @@
 import './HomePage.css'
+import { useNavigate } from "react-router-dom";
+
 
 function HomePage() {
+    const navigate = useNavigate();
+
+
+
+
+
     return (
       <body>
           <header>
@@ -9,18 +17,28 @@ function HomePage() {
           </header>
           <main>
               <section>
-                  <p>SmartCloudFarming is a Berlin-based company specializing in soil intelligence and carbon data.</p>
-                  <p>They offer advanced, low-cost, high-speed 3D soil mapping services using AI and deep neural networks.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis</p>
+                  {/* <p>They offer advanced, low-cost, high-speed 3D soil mapping services using AI and deep neural networks.</p>
                   <p>This allows accurate measurement of soil carbon at a fraction of traditional costs.</p>
                   <p>Their solutions, suitable for various agricultural stakeholders, provide fast and scalable soil analysis for farms globally.</p>
-                  <p>Current promotional offers include reduced rates for large-scale orders.</p>
+                  <p>Current promotional offers include reduced rates for large-scale orders.</p> */}
               </section>
+
+              <div>
+        <button onClick={(event) => {    navigate(`/projects/`, { state: { data: true },});}}>
+            Create New Project
+          </button>
+
+          <button onClick={(event) => {navigate(`/projects`);}}>
+            Project List
+          </button>
+
+              </div>
           </main>
           <footer>
               <p>For more detailed information, visit <a href="https://www.smartcloudfarming.com/">SmartCloudFarming</a>.</p>
           </footer>
       </body>
-     
       );
     }
     

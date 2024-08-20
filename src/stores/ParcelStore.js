@@ -110,6 +110,7 @@ class ParcelStore extends EventEmitter {
       case ActionTypes.FETCH_PARCELS:
         this.parcels = [];
 
+      
         console.log("FETCH_PARCELS", action.payload);
         action.payload.map((parcel) => {
           const newParcel = this.parseParcel(parcel);

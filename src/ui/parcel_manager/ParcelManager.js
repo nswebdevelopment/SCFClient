@@ -9,7 +9,7 @@ import { ParcelActions } from "../../actions/ParcelActions";
 
 function ParcelManager() {
   // const [parcelsOfProject, setParcelsOfProject] = useState(null);
-  const { projectId } = useParams(); // replace 'id' with the actual parameter name
+  const { projectId } = useParams(); 
 
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useState, useRef, useEffect} from "react";
 
 import MapUtils from "../../../../../utils/mapUtils";
 
@@ -6,35 +6,41 @@ import MapUtils from "../../../../../utils/mapUtils";
 
 function MapOptions({isVisible, map, placesService, exportCallback}){
     const [isOptionsVisible, setOptionsIsVisible] = useState(false);
-    const [placeName, setPlaceName] = useState("");
+    // const [placeName, setPlaceName] = useState("");
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
+    const [marker, setMarker] = useState(null);
 
-  // Add a new function to search for a location by name
-  const searchLocation = () => {
-    console.log("Searching for location:", placeName);
-    if (placesService && placeName) {
-        placesService.textSearch(
-        { query: placeName },
-        (results, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            // Move the map to the first result
-            MapUtils.updateCenter(
+    const autocompleteInputRef = useRef(null);
+
+    useEffect(() => {
+      if (autocompleteInputRef.current) {
+        const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current);
+  
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry) {
+            MapUtils.updateCenterWithPin(
               map,
-              results[0].geometry.location.lat(),
-              results[0].geometry.location.lng()
+              place.geometry.location.lat(),
+              place.geometry.location.lng()
             );
-          } else {
-            console.error("Places search failed:", status);
-          }
-        }
-      );
-    }
-    else{
-        console.error("Places service not available or place name is empty")
-    }
-  };
 
+            if (marker) {
+              marker.setMap(null);
+            }
+
+           const newLatLng = new window.google.maps.LatLng(place.geometry.location.lat(), place.geometry.location.lng());
+
+           setMarker(new window.google.maps.Marker({
+            position: newLatLng,
+              map: map,
+           }));
+
+          }
+        });
+      }
+    }, [marker, map]);
 
     return (
         <div className = {'locationOptions'}>
@@ -55,18 +61,7 @@ function MapOptions({isVisible, map, placesService, exportCallback}){
 
         <div className={`slideToggle ${isOptionsVisible ? "open" : ""}`}>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <input
-              type="text"
-              value={placeName}
-              onChange={(e) => setPlaceName(e.target.value)}
-              placeholder="Place Name"
-            />
-            <button
-              style={{ width: "40px", height: "100%" }}
-              onClick={searchLocation}
-            >
-              Go
-            </button>
+              <input ref={autocompleteInputRef} type="text" placeholder="Search location" />
           </div>
 
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -91,7 +86,7 @@ function MapOptions({isVisible, map, placesService, exportCallback}){
 
           <div>
             <button 
-            onClick={() => MapUtils.centerToCurrentLocation(map)}
+            onClick={() => MapUtils.centerToCurrentLocationWithPin(map, marker, setMarker)}
             >
               Center to Current Location
             </button>

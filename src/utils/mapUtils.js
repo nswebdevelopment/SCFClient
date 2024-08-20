@@ -1,4 +1,3 @@
-import { GoogleMap } from "@react-google-maps/api";
 
 class MapUtils {
   static initialCenter = { lat: 0, lng: 0 };

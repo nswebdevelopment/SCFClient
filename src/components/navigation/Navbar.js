@@ -6,7 +6,6 @@ import { SidebarData } from "./SidebarData";
 import "./Navbar.css";
 import { IconContext } from "react-icons";
 import logo from "../../assets/scf_logo.png";
-import userStore from "../../stores/UserStore"; // Importing the userStore
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);

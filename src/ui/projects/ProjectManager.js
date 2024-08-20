@@ -30,6 +30,7 @@ function ProjectManager() {
     return () => {
       window.onbeforeunload = null;
     };
+    // eslint-disable-next-line
   }, []);
 
   
@@ -100,6 +101,7 @@ function ProjectManager() {
       AppStore.removeListener("hideLoader", hideLoader);
       AppStore.removeListener("error", onError);
     };
+    // eslint-disable-next-line
   }, []);
 
   return (

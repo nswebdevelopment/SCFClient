@@ -4,7 +4,7 @@ import MapUtils from "../../../../../utils/mapUtils";
 
 
 
-function MapOptions({isVisible, map, placesService, exportCallback}){
+function MapOptions({isVisible, map, placesService, exportCallback, requestCallback}) {
     const [isOptionsVisible, setOptionsIsVisible] = useState(false);
     // const [placeName, setPlaceName] = useState("");
     const [lat, setLat] = useState(0);
@@ -101,7 +101,17 @@ function MapOptions({isVisible, map, placesService, exportCallback}){
               Export to KML
             </button>
           </div>
-          {/* Your existing code */}
+        
+          <div>
+            <button
+              id="requestButton"
+              onClick={requestCallback}
+              disabled={!isVisible}
+            >
+              Request SCF
+            </button>
+          </div>
+
         </div>
       </div>
     );

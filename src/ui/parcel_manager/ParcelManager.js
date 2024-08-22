@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { useParams } from 'react-router-dom';
 
 import ParcelList from "./components/parcel_list/ParcelList";
 import { ModalProvider } from "./components/popup_save/SaveParcelModal";
@@ -7,16 +6,19 @@ import Map from "./components/map/Map";
 import { ExportParcelsModal } from "./components/popup_export/ExportParcels";
 import { ParcelActions } from "../../actions/ParcelActions";
 
+import { useLocation } from 'react-router-dom';
+
 function ParcelManager() {
   // const [parcelsOfProject, setParcelsOfProject] = useState(null);
-  const { projectId } = useParams(); 
+  // const { projectId } = useParams(); 
+  const location = useLocation();
 
+  const project = location.state.data;
 
   useEffect(() => {
-    ParcelActions.setProjectId(projectId);
+    console.log("ParcelManager useEffect", project);
+    ParcelActions.setProject(project);
   });
-
-
 
   return (
     <div className="home" style={styles.container}>

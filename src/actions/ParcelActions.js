@@ -5,7 +5,7 @@ import Parcel from "../models/Parcel";
 import MapUtils from "../utils/mapUtils";
 
 export const ActionTypes = {
-  SET_PROJECT_ID: "SET_PROJECT_ID",
+  SET_PROJECT: "SET_PROJECT",
   FETCH_PARCELS: "FETCH_PARCELS",
   ADD_PARCEL: "ADD_PARCEL",
   UPDATE_PARCEL: "UPDATE_PARCEL",
@@ -37,17 +37,17 @@ function hideLoader() {
 
 export const ParcelActions = {
 
-setProjectId: (projectId) => {
+setProject: (project) => {
     Dispatcher.dispatch({ 
-      type: ActionTypes.SET_PROJECT_ID,
-      payload: projectId
+      type: ActionTypes.SET_PROJECT,
+      payload: project
     });
 },
 
-  fetchParcels: (projectId) => {
+  fetchParcels: (project) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
 
-    api.fetchParcels(projectId, (response) =>{
+    api.fetchParcels(project, (response) =>{
       Dispatcher.dispatch({
         type: ActionTypes.FETCH_PARCELS,
         payload: response,

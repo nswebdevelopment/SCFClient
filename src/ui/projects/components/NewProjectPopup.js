@@ -14,22 +14,21 @@ function NewProjectPopup({ id, addNewProject, onClose }) {
   };
 
   return (
-    <div>
+    <div className="dialog">
+    <div className="dialog-content">
       <h2>Add New Project</h2>
       <form onSubmit={handleAddProject}>
-        {/* Add your form fields here */}
         <input
+          autoFocus
           type="text"
-          placeholder="Project Name"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
         />
         <button type="submit">Add</button>
-        <button type="button" onClick={onClose}>
-          Cancel
-        </button>
       </form>
+      <button onClick={onClose}>Cancel</button>
     </div>
+  </div>
   );
 }
 

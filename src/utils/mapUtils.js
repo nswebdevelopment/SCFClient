@@ -204,7 +204,7 @@ class MapUtils {
 
   static drawPolygonsOnMap(map, parcel, callback) {
 
-    console.log("Draw polygon on map", parcel);
+    // console.log("Draw polygon on map", parcel);
     if (map === null || parcel === null) return;
 
 
@@ -213,7 +213,6 @@ class MapUtils {
   }
 
   static getVertices(shape) {
-    console.log("Shape:", shape);
 
     if (shape.getBounds) {
       const bounds = shape.getBounds();
@@ -230,7 +229,7 @@ class MapUtils {
         new window.google.maps.LatLng(sw.lat(), ne.lng()), // South East
       ];
 
-      console.log("Rectangle bounds:", path);
+      // console.log("Rectangle bounds:", path);
 
       // Return the path
       return path;
@@ -238,7 +237,7 @@ class MapUtils {
       console.log("Polygon");
 
       const path = shape.getPath().getArray();
-      console.log("Rectangle bounds:", path);
+      // console.log("Rectangle bounds:", path);
       return path;
     }
 

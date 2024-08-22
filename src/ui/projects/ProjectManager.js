@@ -11,7 +11,8 @@ import FullScreenLoader from "../../components/loader/Loader";
 import { useLocation } from 'react-router-dom';
 
 
-import {  projectManagerReducer, initialState, setProjects, setShowPopup, setLoader  } from "../../reducers/projectManagerReducer";
+import {  projectManagerReducer, initialState, setProjects, setShowPopup, setLoader, setShowRequestPopup  } from "../../reducers/projectManagerReducer";
+import SCFRequestPopup from "../../components/popups/SCFRequest";
 
 function ProjectManager() {
   const navigate = useNavigate();
@@ -36,7 +37,10 @@ function ProjectManager() {
   
 
   const nextProjectId = state.projects.length + 1;
-  const handleClose = () => dispatch(setShowPopup(false));
+  const handleClose = () => {
+    dispatch(setShowPopup(false))
+    dispatch(setShowRequestPopup(false))
+  };
 
   const updateProjects = () => {
     console.log("ProjectManager updateProjects", ProjectStore.getAll());
@@ -48,7 +52,7 @@ function ProjectManager() {
   const projectAdded = (project) => {
     updateProjects();
     navigate(`/projects/${project.id}`, {
-      state: { data: project.id },
+      state: { data: project },
     });
   };
 
@@ -78,8 +82,17 @@ function ProjectManager() {
     handleClose();
   };
 
+
+  const handleSendRequest = () => {
+    handleClose();
+  }
+
   const handleShowPopup = () => {
     dispatch(setShowPopup(true));
+  };
+
+  const handleShowRequestPopup = () => {
+    dispatch(setShowRequestPopup(true));
   };
 
   const onError = (error) => {
@@ -113,7 +126,7 @@ function ProjectManager() {
           className="project"
           onClick={() => {
             navigate(`/projects/${project.id}`, {
-              state: { data: project.id },
+              state: { data: project },
             });
           }}
         >
@@ -137,11 +150,27 @@ function ProjectManager() {
           addNewProject={handleAddProject}
           onClose={handleClose}
         />
+
       ) : (
         <div className="newProject" onClick={handleShowPopup}>
           <h2>Add New Project</h2>
         </div>
       )}
+
+      {
+        state.showRequestPopup ? (
+
+          <SCFRequestPopup
+            projects={state.projects}
+            parcels={[]}
+            sendRequest={handleSendRequest}
+            onClose={handleClose}
+          />
+      ) : (null)}
+
+      <button onClick={handleShowRequestPopup}>
+        Send Request
+      </button>
     </div>
   );
 }

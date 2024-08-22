@@ -12,6 +12,7 @@ import CustomDrawingManager from "./drawing_manager/CustomDrawingManager";
 import ParcelStore from "../../../../stores/ParcelStore";
 import AppStore from "../../../../stores/AppStore";
 
+
 import { ParcelActions } from "../../../../actions/ParcelActions";
 import {
   mapReducer,
@@ -22,7 +23,9 @@ import {
   setInitialPolygonState,
   setMapLoaded,
   setPlacesService,
+  setShowSCFRequest
 } from "../../../../reducers/mapReducer";
+import SCFRequestPopup from "../../../../components/popups/SCFRequest";
 
 const libraries = ["drawing", "geometry", "places"];
 
@@ -35,7 +38,7 @@ function Map() {
   function onMapLoaded(googleMap) {
     googleMap.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
     dispatch(setMapLoaded(googleMap, true));
-    ParcelActions.fetchParcels(ParcelStore.getProjectId());
+    ParcelActions.fetchParcels(ParcelStore.getProject().id);
   }
 
   const onError = (error) => {
@@ -44,13 +47,40 @@ function Map() {
   };
   // Handle the "Parcels Fetched" event
   const parcelsFetched = () => {
+    const bounds = new window.google.maps.LatLngBounds();
+    var fitBounds = false;
     ParcelStore.getProjectParcels().map((parcel) => {
+      if (parcel.shape.getBounds) {
+        const b = parcel.shape.getBounds();
+        bounds.extend(b.getNorthEast());
+        bounds.extend(b.getSouthWest());
+        bounds.extend(b.getNorthEast());
+        bounds.extend(b.getSouthWest());
+      } else if (parcel.shape.getPath) {
+        const path = parcel.shape.getPath().getArray();
+        path.forEach(point => {
+          bounds.extend(point);
+        });
+      }
+
       configureParcel(parcel);
+      fitBounds = true;
       return null;
+
     });
 
-    console.log("Parcels fetched:", ParcelStore.getProjectParcels());
+    // console.log("Parcels fetched:", ParcelStore.getProjectParcels());
     dispatch(setParcels([...ParcelStore.getProjectParcels()]));
+    if(fitBounds)
+    state.map.fitBounds(bounds);
+  };
+
+  const handleSendRequest = () => {
+    handleClose();
+  }
+
+  const handleClose = () => {
+    dispatch(setShowSCFRequest(false))
   };
 
   //Handle the "Parcel Removed" event
@@ -252,7 +282,7 @@ function Map() {
         if (parcel && parcel.selectedTypes.length > 0) {
           const vertices = MapUtils.getVertices(polygon);
           ParcelActions.createParcel(
-            ParcelStore.getProjectId(),
+            ParcelStore.getProject().id,
             vertices,
             parcel.selectedTypes,
             parcel.name,
@@ -290,6 +320,14 @@ function Map() {
         // Add a new function to handle the "Cancel" button click
       }
     );
+  };
+
+
+  const requestSCF = () => {
+    if (state.parcels.length === 0) {
+      return;
+    }
+    dispatch(setShowSCFRequest(true));
   };
 
   return (
@@ -336,7 +374,27 @@ function Map() {
           map={state.map}
           placesService={state.placesService}
           exportCallback={exportToKml}
+          requestCallback={requestSCF}
         />
+
+
+
+    { 
+        state.showRequestPopup ? (
+          <SCFRequestPopup
+          projects={[]}
+          parcels={[...state.parcels]}
+          sendRequest={handleSendRequest}
+          onClose={handleClose}
+        />
+          // <SCFRequestPopup
+          //   projects={[]}
+          //   sendRequest={ dispatch(setShowSCFRequest(false))}
+          //   onClose={ dispatch(setShowSCFRequest(false))}
+          // />
+      ) : (null)}
+
+
       </LoadScript>
     </div>
   );

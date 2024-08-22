@@ -10,7 +10,7 @@ class ParcelStore extends EventEmitter {
     console.log("ParcelStore constructor");
     this.parcels = [];
     this.selectedParcel = null;
-    this.projectId = null;
+    this.project = null;
     this.isLoading = false;
   }
 
@@ -22,8 +22,8 @@ class ParcelStore extends EventEmitter {
     return this.selectedParcel;
   }
 
-  getProjectId() {
-    return this.projectId;
+  getProject() {
+    return this.project;
   }
 
   getIsLoading() {
@@ -55,9 +55,6 @@ class ParcelStore extends EventEmitter {
       return parseInt(coverType.key);
     });
 
-    console.log("array", array);
-
-    console.log("+++++++type_is_rectangle", parcel.isRectangle);
 
     let shape;
     if (parcel.isRectangle) {
@@ -103,8 +100,9 @@ class ParcelStore extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
-      case ActionTypes.SET_PROJECT_ID:
-        this.projectId = action.payload;
+      case ActionTypes.SET_PROJECT:
+        console.log("SET_PROJECT", action.payload);
+        this.project = action.payload;
         break;
 
       case ActionTypes.FETCH_PARCELS:
@@ -186,7 +184,7 @@ class ParcelStore extends EventEmitter {
       case ActionTypes.RESET_STORE:
         this.parcels = [];
         this.selectedParcel = null;
-        this.projectId = null;
+        this.project = null;
         this.isLoading = false;
         break;
 

@@ -6,6 +6,7 @@ import api from "../api/api";
 class ProjectStore extends EventEmitter {
   constructor() {
     super();
+    console.log("ProjectStore constructor");
     this.projects = [];
   }
 
@@ -23,6 +24,10 @@ class ProjectStore extends EventEmitter {
 
   getAll() {
     return this.projects;
+  }
+
+  getProject(id) {
+    return this.projects.find(project => project.id === id);
   }
 
   handleActions(action) {

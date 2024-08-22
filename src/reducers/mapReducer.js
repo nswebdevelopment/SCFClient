@@ -5,6 +5,7 @@ const SET_PARCELS = "SET_PARCELS";
 const SET_INITIAL_POLYGON_STATE = "SET_INITIAL_POLYGON_STATE";
 const SET_MAP_LOADED = "SET_MAP_LOADED";
 const SET_PLACES_SERVICE = "SET_PLACES_SERVICE";
+const SET_SHOW_SCF_REQUEST = "SET_SHOW_SCF_REQUEST";
 
 // Initial state
 const initialState = {
@@ -16,6 +17,7 @@ const initialState = {
   map: null,
   mapLoaded: false,
   placesService: null,
+  showRequestPopup: false
 };
 
 // Reducer function
@@ -59,6 +61,11 @@ function mapReducer(state = initialState, action) {
         ...state,
         placesService: action.payload,
       };
+      case SET_SHOW_SCF_REQUEST:
+        return {
+          ...state,
+          showRequestPopup: action.payload,
+        };
 
 
     default:
@@ -97,6 +104,11 @@ const setPlacesService = (placesService) => ({
   payload: placesService,
 });
 
+const setShowSCFRequest = (showRequestPopup) => ({
+  type: SET_SHOW_SCF_REQUEST,
+  payload: showRequestPopup,
+});
+
 export {
   mapReducer,
   initialState,
@@ -106,4 +118,5 @@ export {
   setInitialPolygonState,
   setMapLoaded,
   setPlacesService,
+  setShowSCFRequest
 };

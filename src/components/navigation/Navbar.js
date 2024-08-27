@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import { Link } from "react-router-dom";
-import { SidebarData } from "./SidebarData";
+import { getSidebarData } from "./SidebarData";
 import "./Navbar.css";
 import { IconContext } from "react-icons";
 import logo from "../../assets/scf_logo.png";
+import appStore from "../../stores/AppStore";
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
@@ -36,7 +37,7 @@ function Navbar() {
               <AiIcons.AiOutlineClose />
             </Link>
           </li>
-          {SidebarData.map((item, index) => {
+          {getSidebarData(appStore.getUserRole()).map((item, index) => {
             return (
               <li key={index} className={item.cName}>
                 <Link to={item.path}>

@@ -1,7 +1,28 @@
 import * as AiIcons from "react-icons/ai";
 import * as IoIcons from "react-icons/io";
 
-export const SidebarData = [
+const adminSidebarData = [
+  {
+    title: "Home",
+    path: "/home",
+    icon: <AiIcons.AiFillHome />,
+    cName: "nav-text",
+  },
+  {
+    title: "Support",
+    path: "/support",
+    icon: <IoIcons.IoMdHelpCircle />,
+    cName: "nav-text",
+  },
+  {
+    title: "Companies",
+    path: "/companies",
+    icon: <IoIcons.IoMdHelpCircle />,
+    cName: "nav-text",
+  },
+];
+
+const userSidebarData = [
   {
     title: "Home",
     path: "/home",
@@ -14,17 +35,21 @@ export const SidebarData = [
     icon: <IoIcons.IoIosPaper />,
     cName: "nav-text",
   },
-  // {
-  //   title: "Team",
-  //   path: "/team",
-  //   icon: <IoIcons.IoMdPeople />,
-  //   cName: "nav-text",
-  // },
   {
     title: "Support",
     path: "/support",
     icon: <IoIcons.IoMdHelpCircle />,
     cName: "nav-text",
   },
-
 ];
+
+export function getSidebarData(role) {
+  console.log(role);
+  switch (role) {
+    case 'SuperAdmin':
+      return adminSidebarData;
+    case 'user':
+    default:
+      return userSidebarData;
+  }
+}

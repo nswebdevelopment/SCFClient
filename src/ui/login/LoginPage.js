@@ -7,10 +7,12 @@ import { UserActions } from "../../actions/UserActions";
 
 import UserStore from "../../stores/UserStore";
 import "./LoginPage.css";
+import FullScreenLoader from "../../components/loader/Loader";
 
 function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const [loader, setLoader] = useState(false);
   const {
     register,
     handleSubmit,
@@ -18,17 +20,24 @@ function LoginPage() {
   } = useForm();
 
   const handleUserLoggedIn = useCallback(() => {
+    setLoader(false);  
     navigate("/home");
   }, [navigate]);
 
   const handleLoginError = useCallback(() => {
+    setLoader(false);  
     setError(UserStore.getError());
   }, []);
 
   const handleLogin = useCallback((data) => {
     // navigate("/home");
+    setLoader(true);  
     UserActions.login(data.username, data.password);
   }, []);
+
+  // const handleLoader = useCallback((loader) => {
+  //   setLoader(loader);
+  // }, []);
 
   useEffect(() => {
     UserStore.on("change", handleUserLoggedIn);
@@ -42,6 +51,7 @@ function LoginPage() {
 
   return (
     <div className="login_container">
+        {loader ? <FullScreenLoader /> : null}
       <img
         className="logo"
         src={logo}

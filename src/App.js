@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './ui/home/HomePage';
 import Projects from './ui/projects/ProjectManager';
 import ParcelManager from './ui/parcel_manager/ParcelManager';
+import CompanyManager from './ui/companies/CompanyManager';
 import LoginPage from './ui/login/LoginPage';
 import TeamPage from './ui/team/TeamPage';
 import SupportPage from './ui/support/SupportPage';
@@ -25,6 +26,7 @@ function App() {
 
         <Route path="/team" element={<><Navbar /><TeamPage /></>} />
         <Route path="/support" element={<><Navbar /><SupportPage /></>} />
+        <Route path="/companies" element={<><Navbar /><CompanyManager /></>} />
         {/* Add the Navbar to other routes as needed */}
       </Routes>
   </Router>

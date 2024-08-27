@@ -8,6 +8,15 @@ class AppStore extends EventEmitter {
     console.log("AppStore constructor");
   }
 
+  getUserRole() {
+    console.log("getUserRole", localStorage.getItem("role"));
+    return localStorage.getItem("role");
+  }
+
+  isSuperAdmin() {
+    return this.getUserRole() === "SuperAdmin";
+  } 
+
   handleActions(action) {
     switch (action.type) {
       case ActionTypes.SHOW_LOADER:

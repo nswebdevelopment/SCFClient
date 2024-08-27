@@ -11,7 +11,6 @@ function ApiManager() {
 
       try{
         if (response.status === 200) {
-          console.log("handleResponse from response", response.data.content.data);
             onResponse(response.data.content);
         } 
         else {
@@ -73,6 +72,17 @@ function ApiManager() {
   async function getProjects(onResponse, onError) {
     return api
       .get("/api/Project?pageNumber=1&pageSize=100")
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        onError(error);
+      });
+  }
+
+  async function getProjectsByCompanyId(companyId, onResponse, onError) {
+    return api
+      .get('/api/Project/ByCompanyId/'+companyId)
       .then((response) => {
         handleResponse(response, onResponse, onError);
       })
@@ -198,9 +208,80 @@ function ApiManager() {
   }
   //PARCELS END
 
+
+
+  //COMPANIES START
+
+  function fetchCompanies(onResponse, onError) {
+    return api
+      .get("/api/Company?pageNumber=1&pageSize=100")
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error);
+      });
+  }
+
+
+  async function addCompany(companyName, phone, email, pib, address, onResponse, onError) {
+    api
+    .post("/api/Company", {
+      name: companyName,
+      phone: phone,
+      email: email,
+      pib: pib,
+      address: address,
+    })
+    .then((response) => {
+        handleResponse(response, onResponse, onError);
+    })
+    .catch((error) => {
+      handleError(error, onError);
+      throw error;
+    });
+  }
+
+
+  async function addCompanyAdmin(firstName, lastName, email, phone, password, companyId, onResponse, onError) {
+    api
+    .post("/api/Account/register", {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
+      password: password,
+      companyId: companyId
+    })
+    .then((response) => {
+        handleResponse(response, onResponse, onError);
+    })
+    .catch((error) => {
+      handleError(error, onError);
+      throw error;
+    });
+  }
+
+
+  async function removeCompany(companyId, onResponse, onError) {
+    return api
+      .delete("/api/Company/" + companyId)
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+          handleError(error, onError);
+      });
+  }
+
+
+
+//COMPANIES END
+
   return {
     login,
     getProjects,
+    getProjectsByCompanyId,
     addProject,
     updateParcel,
     removeParcel,
@@ -208,6 +289,11 @@ function ApiManager() {
     fetchParcels,
     getUserDetails,
     createParcel,
+    fetchCompanies,
+    addCompany,
+    removeCompany,
+    addCompanyAdmin
+
   };
 }
 

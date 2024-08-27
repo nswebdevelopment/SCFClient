@@ -19,8 +19,10 @@ function ProjectManager() {
 
   const location = useLocation();
   const data = location.state?.data;
+  const companyId = location.state?.companyId;
   initialState.showPopup = data;
   const [state, dispatch] = useReducer(projectManagerReducer, initialState);
+
   
   useEffect(() => {
     window.onbeforeunload = () => {
@@ -106,7 +108,7 @@ function ProjectManager() {
     AppStore.on("hideLoader", hideLoader);
     AppStore.on("error", onError);
 
-    ProjectActions.fetchProjects();
+    ProjectActions.fetchProjects(companyId);
     return () => {
       ProjectStore.removeListener("change", updateProjects);
       ProjectStore.removeListener("project_added", projectAdded);

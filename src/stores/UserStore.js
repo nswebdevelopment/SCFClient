@@ -34,8 +34,11 @@ class UserStore extends EventEmitter {
         this.user = action.payload;
       
         console.log("UserStore GET_USER", this.user);
+        console.log("UserStore GET_USER ROLE", this.user.role);
         if (this.user) {
           localStorage.setItem("user_name", this.user.firstName + " " + this.user.lastName);
+          localStorage.setItem("role", this.user.role);
+
           this.emit("change");
         }
         

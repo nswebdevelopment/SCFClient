@@ -10,8 +10,8 @@ import {
   setSelectedParcel,
 } from "../../../../reducers/parcelLIstReducer";
 import { landCoverNames } from "../../../../utils/constants";
-import ProjectManager from "../../../projects/ProjectManager";
-import projectStore from "../../../../stores/ProjectStore";
+// import ProjectManager from "../../../projects/ProjectManager";
+// import projectStore from "../../../../stores/ProjectStore";
 
 function ParcelList() {
   const [state, dispatch] = useReducer(parcelListReducer, initialState);

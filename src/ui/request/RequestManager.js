@@ -13,7 +13,7 @@ import { useLocation } from 'react-router-dom';
 
 import {  requestManagerReducer, initialState, setRequests, setShowPopup, setLoader, setShowRequestPopup  } from "../../reducers/requestManagerReducer";
 import SCFRequestStatusPopup from "../../components/popups/SCFRequestStatus";
-import { set } from "react-hook-form";
+// import { set } from "react-hook-form";
 import appStore from "../../stores/AppStore";
 
 function RequestManager() {
@@ -96,13 +96,13 @@ function RequestManager() {
     handleClose();
   }
 
-  const handleShowPopup = () => {
-    dispatch(setShowPopup(true));
-  };
+  // const handleShowPopup = () => {
+  //   dispatch(setShowPopup(true));
+  // };
 
-  const handleShowRequestPopup = () => {
-    dispatch(setShowRequestPopup(true));
-  };
+  // const handleShowRequestPopup = () => {
+  //   dispatch(setShowRequestPopup(true));
+  // };
 
   const onError = (error) => {
     alert("Error: " + error);  

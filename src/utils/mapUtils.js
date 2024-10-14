@@ -315,6 +315,8 @@ class MapUtils {
         parcel.id
       );
 
+        console.log("Add overlay for parcel", imageMapType);
+
         map.overlayMapTypes.push(imageMapType);
       
     }

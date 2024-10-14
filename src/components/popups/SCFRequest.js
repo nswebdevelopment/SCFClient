@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-
+import { RequestActions } from "../../actions/RequestActions";
+import { set } from "react-hook-form";
 function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   // const [projectName, setProjectName] = useState(`Project ${id}`);
   console.log("SCFRequestPopup", projects);
@@ -13,22 +14,30 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   const [grasslandArea, setGrasslandArea] = useState(0);
 
 
-  const [soil_organic_carbon, setSoilOrganicCarbon] = useState(false);
-  const [soil_texture, setSoilTexture] = useState(false);
-  const [carbon_stock, setCarbonStock] = useState(false);
+  // const [soil_organic_carbon, setSoilOrganicCarbon] = useState(false);
+  // const [soil_texture, setSoilTexture] = useState(false);
+  // const [carbon_stock, setCarbonStock] = useState(false);
 
-  const [global_enhanced_ai_mapping, setGlobalEnhancedAiMapping] = useState(false);
-  const [local_ai_mapping, setLocalAiMapping] = useState(false);
+  const [selectedParameters, setSelectedParameters] = useState([]);
+
+  // const [global_enhanced_ai_mapping, setGlobalEnhancedAiMapping] = useState(true);
+  // const [local_ai_mapping, setLocalAiMapping] = useState(false);
+
+  const [serviceType, setServiceType] = useState(1);
+  
 
   // console.log("SCFRequestPopup", projects);
   const handleSendRequest = (event) => {
     event.preventDefault();
     // if (projectName) {
+    RequestActions.createRequest('SCF Request', '', selectedParcels, selectedParameters, serviceType);
     sendRequest();
     // }
   };
 
   const checkIsAllParcelsSelected = (project) => {
+    if(project.parcels.length === 0) return false;
+    
     return project.parcels.every((parcel) =>
       selectedParcels.includes(parseInt(parcel.id, 0))
     );
@@ -78,6 +87,18 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
     }
   };
 
+
+  const setParameter = (checked, param) => {
+   if(checked){
+    setSelectedParameters((prevTypes) => [...prevTypes, param]);
+   }
+   else{
+    setSelectedParameters((prevTypes) =>
+      prevTypes.filter((t) => t !== param)
+    );
+   }
+  };
+
   return (
     <div className="dialog">
       <div className="dialog-content">
@@ -99,9 +120,9 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={soil_organic_carbon}
+                  checked={selectedParameters.includes(1)}
                   onChange={(e) => {
-                    setSoilOrganicCarbon(e.target.checked);
+                    setParameter(e.target.checked, 1);
                   }}
                 />
                 <label>Soil organic carbon</label>
@@ -118,9 +139,9 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={soil_texture}
+                  checked={selectedParameters.includes(2)}
                   onChange={(e) => {
-                    setSoilTexture(e.target.checked);
+                    setParameter(e.target.checked, 2);
                   }}
                 />
                 <label>Soil texture</label>
@@ -137,9 +158,9 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={carbon_stock}
+                  checked={selectedParameters.includes(3)}
                   onChange={(e) => {
-                    setCarbonStock(e.target.checked);
+                    setParameter(e.target.checked, 3);
                   }}
                 />
                 <label>Carbon stock</label>
@@ -160,9 +181,11 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={global_enhanced_ai_mapping}
+                  checked={serviceType === 1}
                   onChange={(e) => {
-                    setGlobalEnhancedAiMapping(e.target.checked);
+                    setServiceType(1);
+                    // setGlobalEnhancedAiMapping(e.target.checked);
+                    // setLocalAiMapping(!e.target.checked);
                   }}
                 />
                 <label>Global Enhanced AI Mapping (GEAIM)</label>
@@ -179,9 +202,11 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={local_ai_mapping}
+                  checked={serviceType === 2}
                   onChange={(e) => {
-                    setLocalAiMapping(e.target.checked);
+                    setServiceType(2);
+                    // setLocalAiMapping(e.target.checked);
+                    // setGlobalEnhancedAiMapping(!e.target.checked);
                   }}
                 />
                 <label>Local AI Mapping (LAIM)</label>
@@ -310,117 +335,6 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
       </div>
     </div>
   );
-
-  // return (
-  //   <div className="dialog">
-  //     <div className="dialog-content">
-  //       <h2>Request SCF Project</h2>
-  //       <p>Select the parcels you want to request for SCF</p>
-  //       <p>Selected Cropland area: {((croplandArea<0 ? 0 :croplandArea) / 10000).toFixed(2)}ha</p>
-  //       <p>Selected Grassland area: {((grasslandArea<0 ? 0 :grasslandArea) / 10000).toFixed(2)}ha</p>
-  //       <ul>
-  //         {projectList.map((project) => (
-  //           <li>
-  //             <div
-  //               key={project.id}
-  //               style={{ alignItems: "center", justifyContent: "flex-start" }}
-  //             >
-  //               <input
-  //                 type="checkbox"
-  //                 id={project.id}
-  //                 name={project.name}
-  //                 value={project}
-  //                 checked={checkIsAllParcelsSelected(project)}
-  //                 onChange={(e) => {
-  //                   if (e.target.checked) {
-  //                       project.parcels.forEach((parcel) => {
-  //                           setParcelSelected(parcel);
-  //                       });
-  //                   } else {
-  //                       project.parcels.forEach((parcel) => {
-  //                           setParcelUnselected(parcel);
-  //                       });
-  //                   }
-  //                 }}
-  //               />
-  //               <label>{project.name}</label>
-  //               <ul>
-  //                 {project.parcels.map((parcel) => (
-  //                   <li key={parcel.id}>
-  //                     <div
-  //                       key={parcel.id}
-  //                       style={{
-  //                         alignItems: "center",
-  //                         justifyContent: "flex-start",
-  //                         marginLeft: "20px",
-  //                       }}
-  //                     >
-  //                       <input
-  //                         type="checkbox"
-  //                         id={parcel.id}
-  //                         name={parcel.name}
-  //                         value={parcel}
-  //                         checked={selectedParcels.includes(
-  //                           parseInt(parcel.id, 0)
-  //                         )}
-  //                         onChange={(e) => {
-  //                           if (e.target.checked) {
-  //                           setParcelSelected(parcel);
-  //                           } else {
-  //                           setParcelUnselected(parcel);
-  //                           }
-  //                         }}
-  //                       />
-  //                       <label>{parcel.name}</label>
-  //                     </div>
-  //                   </li>
-  //                 ))}
-  //               </ul>
-  //             </div>
-  //           </li>
-  //         ))}
-
-  //               <ul>
-  //                 {parcelList.map((parcel) => (
-  //                   <li key={parcel.id}>
-  //                     <div
-  //                       key={parcel.id}
-  //                       style={{
-  //                         alignItems: "center",
-  //                         justifyContent: "flex-start",
-  //                         marginLeft: "20px",
-  //                       }}
-  //                     >
-  //                       <input
-  //                         type="checkbox"
-  //                         id={parcel.id}
-  //                         name={parcel.name}
-  //                         value={parcel}
-  //                         checked={selectedParcels.includes(
-  //                           parseInt(parcel.id, 0)
-  //                         )}
-  //                         onChange={(e) => {
-  //                           if (e.target.checked) {
-  //                           setParcelSelected(parcel);
-  //                           } else {
-  //                           setParcelUnselected(parcel);
-  //                           }
-  //                         }}
-  //                       />
-  //                       <label>{parcel.name}</label>
-  //                     </div>
-  //                   </li>
-  //                 ))}
-  //               </ul>
-  //       </ul>
-
-  //       <form onSubmit={handleSendRequest}>
-  //         <button type="submit">Send Request</button>
-  //       </form>
-  //       <button onClick={onClose}>Cancel</button>
-  //     </div>
-  //   </div>
-  // );
 }
 
 SCFRequestPopup.propTypes = {

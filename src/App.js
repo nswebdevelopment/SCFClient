@@ -12,6 +12,8 @@ import LoginPage from './ui/login/LoginPage';
 import TeamPage from './ui/team/TeamPage';
 import SupportPage from './ui/support/SupportPage';
 import { Navigate } from 'react-router-dom';
+import RequestManager from './ui/request/RequestManager';
+// import ParcelRequestManager from './ui/parcel_manager/ParcelRequestManager';
 
 function App() {
 
@@ -23,7 +25,8 @@ function App() {
         <Route path="/home" element={<><Navbar /><HomePage /></>} />
         <Route path="/projects" element={<><Navbar /><Projects /></>} />
         <Route path="/projects/:projectId" element={<><Navbar /><ParcelManager /></>} />
-
+        <Route path="/requests" element={<><Navbar /><RequestManager /></>} />
+        <Route path="/request/:requestId" element={<><Navbar /><ParcelManager /></>} />
         <Route path="/team" element={<><Navbar /><TeamPage /></>} />
         <Route path="/support" element={<><Navbar /><SupportPage /></>} />
         <Route path="/companies" element={<><Navbar /><CompanyManager /></>} />

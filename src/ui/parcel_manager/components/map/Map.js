@@ -26,19 +26,37 @@ import {
   setShowSCFRequest
 } from "../../../../reducers/mapReducer";
 import SCFRequestPopup from "../../../../components/popups/SCFRequest";
-
+import { useParams } from 'react-router-dom';
+import appStore from "../../../../stores/AppStore";
 const libraries = ["drawing", "geometry", "places"];
 
-function Map() {
-  const [state, dispatch] = useReducer(mapReducer, initialState);
+function Map(openModal) {
+  const { projectId } = useParams();
+  const { requestId } = useParams();
+  console.log("projectIdMap: ", projectId);
+  console.log("requestIdMap: ", requestId);
 
-  const { openModal } = useModal();
+
+  const [state, dispatch] = useReducer(mapReducer, initialState);
   const { openExportModal } = useExportModal();
+  const [isProjectView, setIsProjectView] = React.useState(false);
 
   function onMapLoaded(googleMap) {
     googleMap.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
     dispatch(setMapLoaded(googleMap, true));
-    ParcelActions.fetchParcels(ParcelStore.getProject().id);
+    console.log("Map loaded");
+
+    if(projectId)
+      {
+        setIsProjectView(true);
+        ParcelActions.fetchParcels(projectId);
+      }
+
+    if(requestId)
+    {
+      setIsProjectView(false);
+      ParcelActions.fetchParcelsRequest(requestId);
+    }
   }
 
   const onError = (error) => {
@@ -282,7 +300,7 @@ function Map() {
         if (parcel && parcel.selectedTypes.length > 0) {
           const vertices = MapUtils.getVertices(polygon);
           ParcelActions.createParcel(
-            ParcelStore.getProject().id,
+            projectId,
             vertices,
             parcel.selectedTypes,
             parcel.name,
@@ -332,6 +350,7 @@ function Map() {
 
   return (
     <div className="containerStyle">
+
       {state.loading ? <FullScreenLoader /> : null}
       <LoadScript
         googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
@@ -357,7 +376,10 @@ function Map() {
             fullscreenControl: false,
           }}
         >
-          {state.mapLoaded && (
+
+
+          {state.mapLoaded &&  (
+            isProjectView &&
             <CustomDrawingManager onComplete={handlePolygonComplete} />
           )}
           {state.showInfoWindow && (
@@ -369,13 +391,27 @@ function Map() {
           )}
         </GoogleMap>
 
-        <MapOptions
+        {
+          isProjectView? 
+          <MapOptions
           isVisible={state.parcels.length > 0}
           map={state.map}
           placesService={state.placesService}
           exportCallback={exportToKml}
           requestCallback={requestSCF}
         />
+         : 
+
+        
+      
+       null
+
+
+
+        } 
+    
+         
+   
 
 
 

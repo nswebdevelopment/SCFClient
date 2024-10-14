@@ -3,9 +3,10 @@ import api from "../api/api";
 import { baseUrl } from "../utils/constants";
 import Parcel from "../models/Parcel";
 import MapUtils from "../utils/mapUtils";
+import requestStore from "../stores/RequestStore";
 
 export const ActionTypes = {
-  SET_PROJECT: "SET_PROJECT",
+  SET_PROJECT_ID: "SET_PROJECT_ID",
   FETCH_PARCELS: "FETCH_PARCELS",
   ADD_PARCEL: "ADD_PARCEL",
   UPDATE_PARCEL: "UPDATE_PARCEL",
@@ -37,17 +38,17 @@ function hideLoader() {
 
 export const ParcelActions = {
 
-setProject: (project) => {
+  setProjectId: (projectId) => {
     Dispatcher.dispatch({ 
-      type: ActionTypes.SET_PROJECT,
-      payload: project
+      type: ActionTypes.SET_PROJECT_ID,
+      payload: projectId
     });
 },
 
-  fetchParcels: (project) => {
+  fetchParcels: (projectId) => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
 
-    api.fetchParcels(project, (response) =>{
+    api.fetchParcels(projectId, (response) =>{
       Dispatcher.dispatch({
         type: ActionTypes.FETCH_PARCELS,
         payload: response,
@@ -57,6 +58,20 @@ setProject: (project) => {
       hideLoader();
       handleError(error);
     });
+  },
+
+  fetchParcelsRequest: (requestId) => {
+      console.log("fetchParcelsRequest", requestId);
+    let request = requestStore.getRequest(requestId);
+
+    console.log("fetchParcelsRequest", request);
+    if(request){
+      Dispatcher.dispatch({
+        type: ActionTypes.FETCH_PARCELS,
+        payload: request.parcels,
+      });
+    }
+    
   },
 
   addParcel: (projectId, parcel) => {

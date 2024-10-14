@@ -1,4 +1,5 @@
 import useApiManager from "./apiManager.js";
+import appStore from "../stores/AppStore";
 
 // const baseUrl = 'http://localhost:3001';
 
@@ -278,6 +279,65 @@ function ApiManager() {
 
 //COMPANIES END
 
+
+
+//REQUESTS START
+function createRequest(name, desc, parcelIds, parameterIds, serviceTypeId, onResponse, onError) {
+
+  return api
+    .post("/api/ParcelRequest", {
+      name: name,
+      description: desc,
+      parcelIds: parcelIds,
+      parameterIds: parameterIds,
+      serviceTypeId: serviceTypeId,
+    })
+    .then((response) => {
+      handleResponse(response, onResponse, onError);
+    })
+    .catch((error) => {
+      handleError(error, onError);
+    });
+}
+
+function fetchRequests(onResponse, onError) {
+
+  console.log("isSystemAdmisssxxxxxn", appStore.getUserRole());
+
+  return appStore.getUserRole() === "SuperAdmin" ? api
+  .get("/api/ParcelRequest?pageNumber=1&pageSize=100&includeDeleted=false")
+  .then((response) => {
+    handleResponse(response, onResponse, onError);
+  })
+  .catch((error) => {
+    handleError(error, onError);
+  }) : api
+  .get("/api/ParcelRequest/myRequests?pageNumber=1&pageSize=100&includeDeleted=false")
+  .then((response) => {
+    handleResponse(response, onResponse, onError);
+  })
+  .catch((error) => {
+    handleError(error, onError);
+  });
+  
+}
+
+function changeStatus(requestId, status, onResponse, onError) {
+  return api
+  .put("/api/ParcelRequest/status", {
+    status: status,
+    requestId: requestId,
+  })
+  .then((response) => {
+    handleResponse(response, onResponse, onError);
+  })
+  .catch((error) => {
+    handleError(error, onError);
+  });
+}
+
+
+
   return {
     login,
     getProjects,
@@ -292,7 +352,10 @@ function ApiManager() {
     fetchCompanies,
     addCompany,
     removeCompany,
-    addCompanyAdmin
+    addCompanyAdmin,
+    createRequest,
+    fetchRequests,
+    changeStatus
 
   };
 }

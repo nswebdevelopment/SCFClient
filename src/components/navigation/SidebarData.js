@@ -20,6 +20,13 @@ const adminSidebarData = [
     icon: <IoIcons.IoMdHelpCircle />,
     cName: "nav-text",
   },
+
+  {
+    title: "Requests",
+    path: "/requests",
+    icon: <IoIcons.IoIosPaper />,
+    cName: "nav-text",
+  },
 ];
 
 const userSidebarData = [
@@ -35,6 +42,14 @@ const userSidebarData = [
     icon: <IoIcons.IoIosPaper />,
     cName: "nav-text",
   },
+
+  {
+    title: "My Requests",
+    path: "/requests",
+    icon: <IoIcons.IoIosPaper />,
+    cName: "nav-text",
+  },
+
   {
     title: "Support",
     path: "/support",

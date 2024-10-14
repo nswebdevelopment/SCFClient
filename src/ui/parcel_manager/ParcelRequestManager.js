@@ -9,19 +9,21 @@ import { ParcelActions } from "../../actions/ParcelActions";
 
 import { useParams } from 'react-router-dom';
 
-function ParcelManager() {
+function ParcelRequestManager() {
   // const [parcelsOfProject, setParcelsOfProject] = useState(null);
   // const { projectId } = useParams(); 
 
   // const location = useLocation();
   const { projectId } = useParams();
+  const { requestId } = useParams();
   console.log("projectId: ", projectId);
+  console.log("requestId: ", requestId);
 
   useEffect(() => {
-    // if(projectId)
-      // {
+    if(projectId)
+      {
         ParcelActions.setProjectId(projectId);
-      // }
+      }
   });
 
   return (
@@ -59,4 +61,4 @@ const styles = {
   },
 };
 
-export default ParcelManager;
+export default ParcelRequestManager;

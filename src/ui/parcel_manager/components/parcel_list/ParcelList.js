@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import "./AreaCoverList.css";
 import "./ParcelList.css";
 import ParcelStore from "../../../../stores/ParcelStore";
@@ -10,9 +10,13 @@ import {
   setSelectedParcel,
 } from "../../../../reducers/parcelLIstReducer";
 import { landCoverNames } from "../../../../utils/constants";
+import ProjectManager from "../../../projects/ProjectManager";
+import projectStore from "../../../../stores/ProjectStore";
 
 function ParcelList() {
   const [state, dispatch] = useReducer(parcelListReducer, initialState);
+  
+  // const { projectId } = useParams();
 
   const selectedParcelChanged = useCallback(() => {
     dispatch(setSelectedParcel(ParcelStore.getSelectedParcel()));
@@ -22,13 +26,24 @@ function ParcelList() {
     dispatch(setParcels([...ParcelStore.getProjectParcels()]));
   }, []);
 
+  const projectSetted = useCallback(() => {
+    console.log("ParcelList projectSetted", ParcelStore.getProjectId());
+    setAllowEdit(ParcelStore.getProjectId() != null);
+  }, []);
+
+
+  const [allowEdit, setAllowEdit] = useState(false);
+
   useEffect(() => {
+
     ParcelStore.on("selectedParcel", selectedParcelChanged);
     ParcelStore.on("changed", listChanged);
+    ParcelStore.on("projectSet", projectSetted);
 
     return () => {
       ParcelStore.removeListener("selectedParcel", selectedParcelChanged);
-      ParcelStore.on("changed", listChanged);
+      ParcelStore.removeListener("changed", listChanged);
+      ParcelStore.removeListener("projectSet", projectSetted);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -88,9 +103,9 @@ function ParcelList() {
                   );
                 })}
             </ul>
-            {(state.selectedParcel
-              ? state.selectedParcel.id === parcel.id
-              : false) && (
+       
+            {(state.selectedParcel ? state.selectedParcel.id === parcel.id : false) && (
+              allowEdit ? 
               <div>
                 <button
                   onClick={() => {
@@ -109,7 +124,7 @@ function ParcelList() {
                 >
                   Remove
                 </button>
-              </div>
+              </div> : null
             )}
           </div>
         );

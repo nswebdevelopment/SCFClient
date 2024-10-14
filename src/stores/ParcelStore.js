@@ -10,7 +10,7 @@ class ParcelStore extends EventEmitter {
     console.log("ParcelStore constructor");
     this.parcels = [];
     this.selectedParcel = null;
-    this.project = null;
+    this.projectId = null;
     this.isLoading = false;
   }
 
@@ -21,10 +21,15 @@ class ParcelStore extends EventEmitter {
   getSelectedParcel() {
     return this.selectedParcel;
   }
-
-  getProject() {
-    return this.project;
+  getProjectId()
+  {
+    console.log("ParcelStore getProjectId", this.projectId);
+    return this.projectId;
   }
+
+  // getProject() {
+  //   return this.project;
+  // }
 
   getIsLoading() {
     return this.isLoading;
@@ -100,9 +105,11 @@ class ParcelStore extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
-      case ActionTypes.SET_PROJECT:
-        console.log("SET_PROJECT", action.payload);
-        this.project = action.payload;
+      case ActionTypes.SET_PROJECT_ID:
+        console.log("SET_PROJECT_ID", action.payload);
+        // this.project = action.payload;
+        this.projectId = action.payload;
+        this.emit("projectSet");
         break;
 
       case ActionTypes.FETCH_PARCELS:

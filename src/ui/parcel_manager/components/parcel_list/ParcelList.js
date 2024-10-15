@@ -10,8 +10,7 @@ import {
   setSelectedParcel,
 } from "../../../../reducers/parcelLIstReducer";
 import { landCoverNames } from "../../../../utils/constants";
-// import ProjectManager from "../../../projects/ProjectManager";
-// import projectStore from "../../../../stores/ProjectStore";
+
 
 function ParcelList() {
   const [state, dispatch] = useReducer(parcelListReducer, initialState);
@@ -23,10 +22,11 @@ function ParcelList() {
   }, []);
 
   const listChanged = useCallback(() => {
+    console.log("ParcelList listChanged", ParcelStore.getProjectParcels());
     dispatch(setParcels([...ParcelStore.getProjectParcels()]));
   }, []);
 
-  const projectSetted = useCallback(() => {
+  const projectSet = useCallback(() => {
     console.log("ParcelList projectSetted", ParcelStore.getProjectId());
     setAllowEdit(ParcelStore.getProjectId() != null);
   }, []);
@@ -38,12 +38,13 @@ function ParcelList() {
 
     ParcelStore.on("selectedParcel", selectedParcelChanged);
     ParcelStore.on("changed", listChanged);
-    ParcelStore.on("projectSet", projectSetted);
+    ParcelStore.on("projectSet", projectSet);
 
     return () => {
       ParcelStore.removeListener("selectedParcel", selectedParcelChanged);
       ParcelStore.removeListener("changed", listChanged);
-      ParcelStore.removeListener("projectSet", projectSetted);
+      ParcelStore.removeListener("projectSet", projectSet);
+
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

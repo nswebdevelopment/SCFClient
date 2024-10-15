@@ -26,12 +26,8 @@ class RequestStore extends EventEmitter {
     return this.requests;
   }
 
-  getRequest(id) {
-    console.log("RequestStore getRequest", this.requests);
-    console.log("RequestStore getRequest", this.requests.find(request => request.id === id));
-
-
-    return this.requests.find(request => request.id === parseInt(id));
+  async getRequest(id) {
+    return this.requests.find(request => parseInt(request.id) === parseInt(id));
   }
 
   handleActions(action) {

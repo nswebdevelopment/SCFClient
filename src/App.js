@@ -26,7 +26,7 @@ function App() {
         <Route path="/projects" element={<><Navbar /><Projects /></>} />
         <Route path="/projects/:projectId" element={<><Navbar /><ParcelManager /></>} />
         <Route path="/requests" element={<><Navbar /><RequestManager /></>} />
-        <Route path="/request/:requestId" element={<><Navbar /><ParcelManager /></>} />
+        <Route path="/requests/:requestId" element={<><Navbar /><ParcelManager /></>} />
         <Route path="/team" element={<><Navbar /><TeamPage /></>} />
         <Route path="/support" element={<><Navbar /><SupportPage /></>} />
         <Route path="/companies" element={<><Navbar /><CompanyManager /></>} />

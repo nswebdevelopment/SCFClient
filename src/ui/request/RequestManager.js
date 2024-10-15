@@ -152,7 +152,7 @@ function RequestManager() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>Request</th>
             <th>Service Type</th>
             <th>
   
@@ -179,15 +179,20 @@ function RequestManager() {
           {filteredItems.map((request) => (
             <tr key={request.id}>
               <td>{request.id}</td>
-              <td>{request.name}</td>
+              <td>
+                <div>
+                <h3>{request.name}</h3>
+                {request.description}
+                </div>
+              </td>
               <td>{request.serviceType}</td>
               <td>{request.status}</td>
               {/* <td>{request.pib}</td> */}
               <td>
                 <button
                   onClick={(event) => {
-                            navigate(`/request/${request.id}`, {
-                             state: { data: request },
+                            navigate(`/requests/${request.id}`, {
+                            //  state: { data: request },
                               });
                   }}
                 >

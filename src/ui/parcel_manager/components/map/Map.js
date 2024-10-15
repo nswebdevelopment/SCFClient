@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer } from "react";
 import { GoogleMap, LoadScript } from "@react-google-maps/api";
-// import { useModal } from "../popup_save/SaveParcelModal";
+import { useModal } from "../popup_save/SaveParcelModal";
 import { useExportModal } from "../popup_export/ExportParcels";
 import FullScreenLoader from "../../../../components/loader/Loader";
 import MapUtils from "../../../../utils/mapUtils";
@@ -30,12 +30,13 @@ import { useParams } from 'react-router-dom';
 // import appStore from "../../../../stores/AppStore";
 const libraries = ["drawing", "geometry", "places"];
 
-function Map(openModal) {
+function Map() {
   const { projectId } = useParams();
   const { requestId } = useParams();
   console.log("projectIdMap: ", projectId);
   console.log("requestIdMap: ", requestId);
 
+  const { openModal } = useModal();
 
   const [state, dispatch] = useReducer(mapReducer, initialState);
   const { openExportModal } = useExportModal();
@@ -65,6 +66,7 @@ function Map(openModal) {
   };
   // Handle the "Parcels Fetched" event
   const parcelsFetched = () => {
+    console.log("Parcels fetched:", ParcelStore.getProjectParcels());
     const bounds = new window.google.maps.LatLngBounds();
     var fitBounds = false;
     ParcelStore.getProjectParcels().map((parcel) => {
@@ -87,8 +89,11 @@ function Map(openModal) {
 
     });
 
-    // console.log("Parcels fetched:", ParcelStore.getProjectParcels());
+    console.log("Parcels fetched:", ParcelStore.getProjectParcels());
     dispatch(setParcels([...ParcelStore.getProjectParcels()]));
+
+
+
     if(fitBounds)
     state.map.fitBounds(bounds);
   };
@@ -391,24 +396,19 @@ function Map(openModal) {
           )}
         </GoogleMap>
 
-        {
-          isProjectView? 
+        {/* {
+          isProjectView?  */}
           <MapOptions
           isVisible={state.parcels.length > 0}
           map={state.map}
           placesService={state.placesService}
           exportCallback={exportToKml}
           requestCallback={requestSCF}
+          isProjectView = {isProjectView}
         />
-         : 
-
-        
-      
+         {/* : 
        null
-
-
-
-        } 
+        }  */}
     
          
    

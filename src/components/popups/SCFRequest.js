@@ -13,6 +13,9 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   const [croplandArea, setCroplandArea] = useState(0);
   const [grasslandArea, setGrasslandArea] = useState(0);
 
+  const [requestName, setRequestName] = useState("");
+  const [requestDesc, setRequestDesc] = useState("");
+
 
   // const [soil_organic_carbon, setSoilOrganicCarbon] = useState(false);
   // const [soil_texture, setSoilTexture] = useState(false);
@@ -30,7 +33,7 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   const handleSendRequest = (event) => {
     event.preventDefault();
     // if (projectName) {
-    RequestActions.createRequest('SCF Request', '', selectedParcels, selectedParameters, serviceType);
+    RequestActions.createRequest(requestName, requestDesc, selectedParcels, selectedParameters, serviceType);
     sendRequest();
     // }
   };
@@ -103,9 +106,40 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
     <div className="dialog">
       <div className="dialog-content">
         <h2>Request SCF Project</h2>
+        <div>
+              <input
+              type="text"
+              placeholder="Request name"
+              value={requestName}
+              id="requestName"
+              style={{ marginBottom: "10px", marginRight: "20px" }}
+              onChange={(e) => 
+                setRequestName(e.target.value)
+                // console.log("e.target.value", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Request description"
+              value={requestDesc}
+              id="requestDescription"
+              style={{ marginBottom: "10px" }}
+              onChange={(e) => 
+                setRequestDesc(e.target.value)
+                // console.log("e.target.value", e.target.value)
+              }
+            />
+
+              </div>
 
         <div className="dialog-content" style={{ display: "flex" }}>
+          
           <div style={{ flex: "1" }}>
+
+     
+
+
+
             <div>
               <h4>Parameters to be SMM</h4>
 

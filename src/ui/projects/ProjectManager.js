@@ -128,7 +128,7 @@ function ProjectManager() {
           className="project"
           onClick={() => {
             navigate(`/projects/${project.id}`, {
-              state: { data: project },
+              // state: { data: project },
             });
           }}
         >

@@ -61,17 +61,27 @@ export const ParcelActions = {
   },
 
   fetchParcelsRequest: (requestId) => {
-      console.log("fetchParcelsRequest", requestId);
-    let request = requestStore.getRequest(requestId);
-
-    console.log("fetchParcelsRequest", request);
-    if(request){
-      Dispatcher.dispatch({
-        type: ActionTypes.FETCH_PARCELS,
-        payload: request.parcels,
+    Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
+    requestStore.getRequest(requestId).then((request) => {
+            Dispatcher.dispatch({
+            type: ActionTypes.FETCH_PARCELS,
+            payload: request.parcels,
       });
-    }
-    
+    });
+   
+    // if(request){
+    //   console.log("fetchParcelsRequest");
+    //   Dispatcher.dispatch({
+    //     type: ActionTypes.FETCH_PARCELS,
+    //     payload: request.parcels,
+    //   });
+    //   hideLoader();
+    // }
+    // else {
+    //   console.log("fetchParcelsRequest Error");
+    //   hideLoader();
+    //   handleError("Cant find request");
+    // };
   },
 
   addParcel: (projectId, parcel) => {

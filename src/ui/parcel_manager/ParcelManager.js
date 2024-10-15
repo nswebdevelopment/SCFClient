@@ -15,13 +15,11 @@ function ParcelManager() {
 
   // const location = useLocation();
   const { projectId } = useParams();
-  console.log("projectId: ", projectId);
+  // const { requestId } = useParams();
+  console.log("projectId: ", projectId); 
 
   useEffect(() => {
-    // if(projectId)
-      // {
         ParcelActions.setProjectId(projectId);
-      // }
   });
 
   return (

@@ -7,11 +7,11 @@ import { landCoverColors } from ".././/utils/constants";
 class ParcelStore extends EventEmitter {
   constructor() {
     super();
-    console.log("ParcelStore constructor");
     this.parcels = [];
     this.selectedParcel = null;
     this.projectId = null;
     this.isLoading = false;
+    console.log("ParcelStore constructor");
   }
 
   getProjectParcels() {
@@ -115,15 +115,15 @@ class ParcelStore extends EventEmitter {
       case ActionTypes.FETCH_PARCELS:
         this.parcels = [];
 
-      
-        console.log("FETCH_PARCELS", action.payload);
+        // console.log("FETCH_PARCELS", action.payload);
+
+        // eslint-disable-next-line array-callback-return
         action.payload.map((parcel) => {
-          const newParcel = this.parseParcel(parcel);
-          this.parcels.push(newParcel);
-          return this.parseParcel(parcel);
-          // return null; // Add a return statement here
+          this.parcels.push(this.parseParcel(parcel));
+          // return this.parseParcel(parcel);
         });
 
+        console.log("FETCH_PARCELS parcels", this.parcels);
         this.emit("parcelsFetched");
         this.emit("changed");
         break;
@@ -155,6 +155,7 @@ class ParcelStore extends EventEmitter {
 
           this.parcels = newParcels;
         }
+
 
         this.emit("updateParcel", parcel);
         this.emit("changed");

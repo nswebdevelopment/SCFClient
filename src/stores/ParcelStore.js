@@ -161,6 +161,12 @@ class ParcelStore extends EventEmitter {
         this.emit("changed");
         break;
 
+      case ActionTypes.UPDATE_PARCEL_URL:
+      this.emit("updateParcel", action.payload);
+      this.emit("changed");
+      break;
+
+
       case ActionTypes.REMOVE_PARCEL:
         this.parcels = this.parcels.filter(
           (parcel) => parcel.id !== action.payload

@@ -56,6 +56,13 @@ const userSidebarData = [
     icon: <IoIcons.IoMdHelpCircle />,
     cName: "nav-text",
   },
+
+  {
+    title: "My Profile",
+    path: "/profile",
+    icon: <AiIcons.AiOutlineUser />,
+    cName: "nav-text",
+  },
 ];
 
 export function getSidebarData(role) {

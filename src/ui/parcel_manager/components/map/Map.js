@@ -189,6 +189,10 @@ function Map() {
     }
 
     // Add a new function to add overlays for the parcel
+
+    // ParcelActions.checkParcelUrl(parcel.imageUrl)
+    ParcelActions.checkParcelUrl(parcel)
+
     MapUtils.addOverlaysForParcel(parcel, state.map);
   }
 

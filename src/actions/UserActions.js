@@ -48,12 +48,30 @@ export const UserActions = {
 
   getUserDetails: () => {
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
-    api.getUserDetails().then((data) => {
+    api.getUserDetails((response) => {
       Dispatcher.dispatch({
         type: ActionTypes.GET_USER,
-        payload: data,
+        payload: response,
       });
       Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
+    }, (error) => {
+      Dispatcher.dispatch({
+        type: ActionTypes.ERROR,
+        payload: error.message,
+      });
+    });
+  },
+
+  resetPassword: (oldPassword, newPassword) => {
+    Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
+    api.resetPassword(oldPassword, newPassword, (response) => {
+  
+      Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
+    }, (error) => {
+      Dispatcher.dispatch({
+        type: ActionTypes.ERROR,
+        payload: error.message,
+      });
     });
   },
 };

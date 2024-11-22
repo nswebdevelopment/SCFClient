@@ -12,6 +12,7 @@ function ApiManager() {
 
       try{
         if (response.status === 200) {
+          console.log("HANDLE_RESPONSE", response.data.content);
             onResponse(response.data.content);
         } 
         else {
@@ -68,6 +69,23 @@ function ApiManager() {
         // throw error; // Throw the error so it can be caught in LoginPage
       });
   }
+
+
+  function resetPassword(oldPassword, newPassword, onResponse, onError) {
+    return api
+      .post("/api/Account/password/", {
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      })
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error, onError);
+        // throw error; // Throw the error so it can be caught in LoginPage
+      });
+  }
+
   //USER END
 
   async function getProjects(onResponse, onError) {
@@ -150,6 +168,21 @@ function ApiManager() {
       })
       .catch((error) => {
         handleError(error, onError);
+      });
+  }
+
+
+  function checkParcelUrl(formatUrl, onResponse, onError) {
+      
+
+    return api
+      .get(formatUrl, {})
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+        handleError(error, onError);
+        // throw error; // Throw the error so it can be caught in LoginPage
       });
   }
 
@@ -355,7 +388,8 @@ function changeStatus(requestId, status, onResponse, onError) {
     addCompanyAdmin,
     createRequest,
     fetchRequests,
-    changeStatus
+    changeStatus,
+    resetPassword
 
   };
 }

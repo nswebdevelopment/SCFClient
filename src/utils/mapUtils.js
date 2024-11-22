@@ -1,3 +1,4 @@
+import { baseUrl } from "./constants";
 
 class MapUtils {
   static initialCenter = { lat: 0, lng: 0 };
@@ -300,7 +301,18 @@ class MapUtils {
   }
   }
 
-  static addOverlaysForParcel(parcel, map) {
+   static isValidUrl(str) {
+    try {
+      new URL(str);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+
+  static async addOverlaysForParcel(parcel, map)  {
+  
 
     if (map && map instanceof window.google.maps.Map) {
 
@@ -309,32 +321,84 @@ class MapUtils {
     });
 
     if (index !== -1) return;
-      const imageMapType = this.getImageMapType(
-        parcel.imageUrl,
-        1.0,
-        parcel.id
-      );
+     console.log("Add overlay for parcel URL", parcel.imageUrl);
 
-        console.log("Add overlay for parcel", imageMapType);
 
+     if(this.isValidUrl(parcel.imageUrl))
+     {
+
+      var formatUrl = parcel.imageUrl
+      .replace("{z}", 0)
+      .replace("{x}", 0)
+      .replace("{y}", 0)
+
+      formatUrl = "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/41d4e7aadecf21c7e6ea98bac8bbfbda-4a93e028e23a5bc3b56418c6f42247d23/tiles/0/0/0"
+      
+        const imageMapType = this.getImageMapType(
+          parcel.imageUrl,
+          1.0,
+          parcel.id
+        );
+  
         map.overlayMapTypes.push(imageMapType);
+    
+   
+     }
+
+     else{
+
+      fetch(baseUrl + "/api/asset", {
+        method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({assetId: parcel.imageUrl}),
+        
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("GET ASSET", data);
+
+          const imageMapType = this.getImageMapType(
+            data["url"],
+            1.0,
+            parcel.id,
+          );
+         map.overlayMapTypes.push(imageMapType);
+
+          // Resolve the promise with the new parcel
+          // resolve(data);
+        })
+        .catch((error) => {
+          // Reject the promise with the error
+          // reject(error);
+        });
+     }
+  
+
+     
+
+
       
     }
   }
 
+
   static getImageMapType(urlFormat, opacity = 1.0, name = "Clipped Image") {
     return new window.google.maps.ImageMapType({
       getTileUrl: function (tile, zoom) {
+    
         return urlFormat
-          .replace("{z}", zoom)
-          .replace("{x}", tile.x)
-          .replace("{y}", tile.y);
+        .replace("{z}", zoom)
+        .replace("{x}", tile.x)
+        .replace("{y}", tile.y);
       },
       tileSize: new window.google.maps.Size(256, 256),
       name: name,
       opacity: opacity,
     });
   }
+
 
   static getPolygonCenter(polygon) {
     var bounds = new window.google.maps.LatLngBounds();

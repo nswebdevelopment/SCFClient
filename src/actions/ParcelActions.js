@@ -10,6 +10,7 @@ export const ActionTypes = {
   FETCH_PARCELS: "FETCH_PARCELS",
   ADD_PARCEL: "ADD_PARCEL",
   UPDATE_PARCEL: "UPDATE_PARCEL",
+  UPDATE_PARCEL_URL: "UPDATE_PARCEL_URL",
   REMOVE_PARCEL: "REMOVE_PARCEL",
   SELECTED_PARCEL: "SELECTED_PARCEL",
   EDIT_PARCEL: "EDIT_PARCEL",
@@ -36,8 +37,63 @@ function hideLoader() {
   Dispatcher.dispatch({ type: ActionTypes.HIDE_LOADER });
 }
 
-export const ParcelActions = {
 
+function updateParcel(parcel)
+{
+  // Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
+  console.log("UPDATE PARCEL: " + parcel.imageUrl)
+  api.updateParcel(parcel, 
+      (response)=>{
+      parcel.shape.setMap(null);
+      hideLoader();
+      Dispatcher.dispatch({
+        type: ActionTypes.UPDATE_PARCEL,
+        payload: response,
+      });
+    }
+    , (error)=>{
+      parcel.shape.setMap(null);
+      hideLoader();
+      handleError(error);
+    }
+  );
+}
+
+function updateLandTypeCover(parcel) {
+  const types = parcel.coverTypes
+
+  const coords = JSON.parse(parcel.coordinates);
+  const lngLatArray = coords.map((coord) => {
+      return [coord.lng, coord.lat];
+    });
+
+  fetch(baseUrl + "/api/getWorldCoverTypes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ lngLatArray, types }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+
+      console.log("getLandTypeCover_UPDATE", data);
+
+      parcel.imageUrl = data["urlFormat"];
+      parcel.urlFormat = data["urlFormat"];
+      console.log(parcel.urlFormat)
+
+      updateParcel(parcel)
+      // Dispatcher.dispatch(
+      //   {
+      //     type: ActionTypes.UPDATE_PARCEL_URL,
+      //     payload: parcel
+      //   }
+      // )
+    });
+}
+
+export const ParcelActions = {
   setProjectId: (projectId) => {
     Dispatcher.dispatch({ 
       type: ActionTypes.SET_PROJECT_ID,
@@ -102,26 +158,7 @@ export const ParcelActions = {
   },
 
   updateParcel: (parcel) => {
-    Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
-    api
-      .updateParcel(parcel, 
-        
-        (response)=>{
-        parcel.shape.setMap(null);
-        hideLoader();
-        Dispatcher.dispatch({
-          type: ActionTypes.UPDATE_PARCEL,
-          payload: response,
-        });
-      }
-
-      , (error)=>{
-        parcel.shape.setMap(null);
-        hideLoader();
-        handleError(error);
-      }
-
-    );
+    updateParcel(parcel)
   },
 
   removeParcel: (parcel) => {
@@ -267,5 +304,28 @@ export const ParcelActions = {
       });
     return;
   },
-  
+
+  checkParcelUrl: (parcel) => {
+
+    const formatUrl = parcel.imageUrl
+    .replace("{z}", 0)
+    .replace("{x}", 0)
+    .replace("{y}", 0);
+
+    fetch(formatUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },  
+    })
+    .then((response) => 
+{
+
+    if(response.status !== 200)
+      {
+        updateLandTypeCover(parcel)
+      }
+    }
+  )
+  },    
 };

@@ -13,6 +13,7 @@ import TeamPage from './ui/team/TeamPage';
 import SupportPage from './ui/support/SupportPage';
 import { Navigate } from 'react-router-dom';
 import RequestManager from './ui/request/RequestManager';
+import MyProfilePage from './ui/profile/myProfile';
 // import ParcelRequestManager from './ui/parcel_manager/ParcelRequestManager';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/team" element={<><Navbar /><TeamPage /></>} />
         <Route path="/support" element={<><Navbar /><SupportPage /></>} />
         <Route path="/companies" element={<><Navbar /><CompanyManager /></>} />
+        <Route path="/profile" element={<><Navbar /><MyProfilePage /></>} />
         {/* Add the Navbar to other routes as needed */}
       </Routes>
   </Router>

@@ -38,7 +38,7 @@
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 50;
 }
 
 .menu-item {
@@ -198,4 +198,10 @@ p.error{
   background: white;
   padding: 20px;
   border-radius: 5px;
+}
+
+.profile-details-container {
+  margin: 0 auto;
+  padding: 20px;
+
 }

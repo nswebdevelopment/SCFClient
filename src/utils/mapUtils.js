@@ -326,14 +326,6 @@ class MapUtils {
 
      if(this.isValidUrl(parcel.imageUrl))
      {
-
-      var formatUrl = parcel.imageUrl
-      .replace("{z}", 0)
-      .replace("{x}", 0)
-      .replace("{y}", 0)
-
-      formatUrl = "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/41d4e7aadecf21c7e6ea98bac8bbfbda-4a93e028e23a5bc3b56418c6f42247d23/tiles/0/0/0"
-      
         const imageMapType = this.getImageMapType(
           parcel.imageUrl,
           1.0,

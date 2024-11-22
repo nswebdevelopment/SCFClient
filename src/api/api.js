@@ -171,21 +171,6 @@ function ApiManager() {
       });
   }
 
-
-  function checkParcelUrl(formatUrl, onResponse, onError) {
-      
-
-    return api
-      .get(formatUrl, {})
-      .then((response) => {
-        handleResponse(response, onResponse, onError);
-      })
-      .catch((error) => {
-        handleError(error, onError);
-        // throw error; // Throw the error so it can be caught in LoginPage
-      });
-  }
-
   function updateParcel(parcel, onResponse, onError) {
     const coords = JSON.parse(parcel.coordinates);
     const coordinates = coords.map((coord) => {

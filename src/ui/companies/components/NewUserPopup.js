@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import Validator from "../../../utils/validator";
 
 function NewUserPopup({ id, companyName, addNewUser, onClose }) {
   // name, phone, email, pib, address
@@ -14,10 +15,14 @@ function NewUserPopup({ id, companyName, addNewUser, onClose }) {
   const handleAddUser = (event) => {
     event.preventDefault();
     if (firstName && lastName && email && password && companyId) {
-      addNewUser(firstName, lastName, email, phone, password, companyId);
+      if(!Validator.validateEmail(email))
+        {
+          alert("Email is not valid");
+          return
+        }
+        addNewUser(firstName, lastName, email, phone, password, companyId);
     }
     else {
-
       alert("Please fill all fields before submitting the form." + firstName + lastName + email + phone + password + companyId);
     }
   };

@@ -205,3 +205,16 @@ p.error{
   padding: 20px;
 
 }
+
+textarea {
+  height: 150px;
+  resize: none; /* Prevent resizing */
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 14px;
+}

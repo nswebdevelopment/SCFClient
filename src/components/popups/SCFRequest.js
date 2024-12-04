@@ -13,9 +13,11 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   const [croplandArea, setCroplandArea] = useState(0);
   const [grasslandArea, setGrasslandArea] = useState(0);
 
-  const [requestName, setRequestName] = useState("");
+  const [requestName, setRequestName] = useState(`${localStorage.getItem("user_name")}`);
   const [requestDesc, setRequestDesc] = useState("");
-
+  const [requestInstructions, setInstructions] = useState("");
+  const [desiredTimeline, setDesiredTimeline] = useState("");
+  const today = new Date().toISOString().split("T")[0];
 
   // const [soil_organic_carbon, setSoilOrganicCarbon] = useState(false);
   // const [soil_texture, setSoilTexture] = useState(false);
@@ -33,8 +35,13 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   const handleSendRequest = (event) => {
     event.preventDefault();
     // if (projectName) {
-    RequestActions.createRequest(requestName, requestDesc, selectedParcels, selectedParameters, serviceType);
+
+      // console.log(desiredTimeline)
+
+    RequestActions.createRequest(requestName, requestDesc, selectedParcels, selectedParameters, serviceType, requestInstructions, desiredTimeline);
     sendRequest();
+
+
     // }
   };
 
@@ -105,7 +112,7 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
   return (
     <div className="dialog">
       <div className="dialog-content">
-        <h2>Request SCF Project</h2>
+        <h2>Get Your Soil Analytics Quote</h2>
         <div>
               <input
               type="text"
@@ -130,16 +137,31 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
               }
             />
 
+        <textarea
+              type="text"
+              placeholder="Specific Instruction/Questions"
+              value={requestInstructions}
+              id="requestInstruction"
+              style={{ marginBottom: "10px" , height : "100px"}}
+              onChange={(e) => 
+                setInstructions(e.target.value)
+              }
+            />
+
+<label htmlFor="timeline">Desired Timeline:</label>
+        <input
+          type="date"
+          id="timeline"
+          value={desiredTimeline}
+          onChange={(e) => setDesiredTimeline(e.target.value)}
+          min={today} // Disable past dates
+        />
+
               </div>
 
         <div className="dialog-content" style={{ display: "flex" }}>
           
           <div style={{ flex: "1" }}>
-
-     
-
-
-
             <div>
               <h4>Parameters to be SMM</h4>
 

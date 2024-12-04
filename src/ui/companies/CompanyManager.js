@@ -100,6 +100,21 @@ function CompanyManager() {
     dispatch(setShowPopupNewUser(true));
   };
 
+
+  const handleUserRemoval = (event, user) => {
+    event.stopPropagation();
+    handleRemove(user);
+  };
+
+
+  const handleRemove = (user) => {
+    if (user) {
+      CompanyActions.removeUser(user);
+    }
+  };
+
+
+
   const onError = (error) => {
     alert("Error: " + error);
   };
@@ -133,8 +148,10 @@ function CompanyManager() {
             <th>Company ID</th>
             <th>Company Name</th>
             <th>Address</th>
+            <th>Email</th>
             <th>Phone</th>
-            <th>PIB</th>
+            <th>Contact Person</th>
+            <th>Admins</th>
             <th>No. Projects</th>
             <th>Actions</th>
           </tr>
@@ -145,8 +162,19 @@ function CompanyManager() {
               <td>{company.id}</td>
               <td>{company.name}</td>
               <td>{company.address}</td>
+              <td>{company.email}</td>
               <td>{company.phone}</td>
-              <td>{company.pib}</td>
+              <td>{company.contactPerson}</td>
+              <td>
+              <ul>
+              {company.users.map((user, index) => (
+               <li key={index} className="user-item">
+                <span>{user.email}</span>
+                <button className="remove-button" onClick={(event) => handleUserRemoval(event, user)}>×</button>
+                 </li>
+              ))}
+              </ul>
+              </td>
               <td>
                 <button
                   onClick={(event) => {

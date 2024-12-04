@@ -1,22 +1,42 @@
+import React, { useEffect } from "react";
 import "./HomePage.css";
 import { useNavigate } from "react-router-dom";
 import appStore from "../../stores/AppStore";
+import "../../components/popups/WelcomePopup"
+import WelcomePopup from "../../components/popups/WelcomePopup";
 
 function HomePage() {
   const navigate = useNavigate();
+
+  const [showPopup, setShowPopup] = React.useState(true);
+
+  const handleOutsideClick = (event) => {
+      setShowPopup(false); // Hide the popup
+  };
+
+
+  useEffect(() => {
+    // Attach event listener to detect clicks outside the popup
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
   return (
-    <body>
+    <body class="homeBody">
       <header>
         <h1>SmartCloudFarming</h1>
-        <p>Advanced Soil Carbon Intelligence & Mapping at Speed</p>
+        <p class="white-text">Advanced Soil Carbon Intelligence & Mapping at Speed</p>
       </header>
       <main>
         <section>
           <p>
-            Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean
-            commodo ligula eget dolor. Aenean massa. Cum sociis natoque
-            penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-            Donec quam felis
+          Map your fields, analyze your soil, and gain soil knowledge to make informed
+          decisions about land management, carbon farming, and regenerative practices.
+          From farmers to food companies, SmartCloudFarming provides the soil intelligence
+          needed to cultivate a healthier future. Join us, track your progress and unlock the
+          power of precision agriculture.
           </p>
           {/* <p>They offer advanced, low-cost, high-speed 3D soil mapping services using AI and deep neural networks.</p>
                   <p>This allows accurate measurement of soil carbon at a fraction of traditional costs.</p>
@@ -42,8 +62,16 @@ function HomePage() {
               >
                 Project List
               </button>
+
+
+              {
+        showPopup ? (
+          <WelcomePopup/>
+      ) : (null)}
+
             </div>
           ) : null}
+
         </div>
       </main>
       <footer>

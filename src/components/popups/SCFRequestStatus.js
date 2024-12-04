@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { RequestActions } from "../../actions/RequestActions";
 // import { set } from "react-hook-form";
-function SCFRequestStatusPopup({ requestId, currentStatus, sendRequest, onClose }) {
+function SCFRequestStatusPopup({ requestName, requestId, currentStatus, sendRequest, onClose }) {
 
   const [status, setStatus] = useState(currentStatus);
 
@@ -20,10 +20,9 @@ function SCFRequestStatusPopup({ requestId, currentStatus, sendRequest, onClose 
   return (
     <div className="dialog">
       <div className="dialog-content">
-        <h2>Change status of request id: {requestId}</h2>
+        <h2>Project status of {requestName}</h2>
 
         <div>
-              <h4>Type of service</h4>
 
               <div
                 style={{
@@ -36,14 +35,14 @@ function SCFRequestStatusPopup({ requestId, currentStatus, sendRequest, onClose 
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={status === "pending".toUpperCase()}
+                  checked={status === "Received"}
                   onChange={(e) => {
-                    setStatus("pending".toUpperCase());
+                    setStatus("Received");
                     // setGlobalEnhancedAiMapping(e.target.checked);
                     // setLocalAiMapping(!e.target.checked);
                   }}
                 />
-                <label>Pending</label>
+                <label>Received</label>
               </div>
 
               <div
@@ -57,14 +56,14 @@ function SCFRequestStatusPopup({ requestId, currentStatus, sendRequest, onClose 
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={status === "IN_PROGRESS".toUpperCase()}
+                  checked={status === "In Review"}
                   onChange={(e) => {
-                    setStatus("IN_PROGRESS".toUpperCase());
+                    setStatus("In Review");
                     // setLocalAiMapping(e.target.checked);
                     // setGlobalEnhancedAiMapping(!e.target.checked);
                   }}
                 />
-                <label>In Progress</label>
+                <label>In Review</label>
               </div>
 
               <div
@@ -78,14 +77,14 @@ function SCFRequestStatusPopup({ requestId, currentStatus, sendRequest, onClose 
                   id={"parcel.id"}
                   name={"parcel.name"}
                   value={"parcel"}
-                  checked={status === "Finished".toUpperCase()}
+                  checked={status === "Quoted"}
                   onChange={(e) => {
-                    setStatus("finished".toUpperCase());
+                    setStatus("Quoted");
                     // setLocalAiMapping(e.target.checked);
                     // setGlobalEnhancedAiMapping(!e.target.checked);
                   }}
                 />
-                <label>Finished</label>
+                <label>Quoted</label>
               </div>
             </div>
 

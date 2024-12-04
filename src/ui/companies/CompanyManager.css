@@ -8,8 +8,42 @@
     border: 1px solid black;
     padding: 10px;
   }
+
+  .user-item {
+    display: flex; /* Enables flexbox for layout */
+    justify-content: space-between; /* Ensures items are spaced correctly */
+    align-items: center; /* Vertically aligns content */
+    padding: 0.5rem 0; /* Optional padding */
+    border-bottom: 1px solid #ddd; /* Optional: Adds a separator between list items */
+    position: relative; /* Ensures the button can be positioned at the end */
+  }
   
-  /* .red-button {
-    color: white;
-    background-color: red;
-  } */
+  .user-item span {
+    flex: 1; /* Pushes the button to the far right */
+    padding-right: 2rem; /* Adds spacing to avoid overlapping with the button */
+  }
+  
+  .remove-button {
+    position: absolute; /* Positions the button relative to the parent */
+    right: 0; /* Places it at the end of the parent */
+    top: 50%; /* Centers vertically */
+    transform: translateY(-50%); /* Corrects vertical alignment */
+    width: 1.5rem; /* Makes the button a circle */
+    height: 1.5rem; /* Same width and height for a perfect circle */
+    background: red; /* Button background color */
+    color: white; /* Text color */
+    border: none; /* Removes default border */
+    border-radius: 50%; /* Makes it a circle */
+    font-size: 1rem; /* Adjusts size of "X" */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    display: flex; /* Ensures content is centered */
+    justify-content: center; /* Centers "X" horizontally */
+    align-items: center; /* Centers "X" vertically */
+    text-decoration: none; /* Removes any underline (if present) */
+  }
+  
+  .remove-button:hover {
+    background: darkred; /* Changes background color on hover for feedback */
+  }
+  
+  

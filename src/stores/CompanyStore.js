@@ -34,8 +34,22 @@ class CompanyStore extends EventEmitter {
         this.emit("change");
         break;
 
+        case ActionTypes.REMOVE_USER:
+          // this.companies = this.companies.filter(company => company.id !== action.payload);
+            this.companies.forEach(function(company, index, array) {
+              company.users = company.users.filter(user => user.personId !== action.payload)
+            });
+
+          this.emit("change");
+          break;
+
         case ActionTypes.ADD_COMPANY_ADMIN:
-          this.emit("admin_added", action.payload);
+      
+
+          let company = this.companies.find(company => company.id === action.payload.companyId)
+
+          company.users.push(action.payload)
+          this.emit("change");
           break;
 
       default:

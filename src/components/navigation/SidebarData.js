@@ -27,6 +27,13 @@ const adminSidebarData = [
     icon: <IoIcons.IoIosPaper />,
     cName: "nav-text",
   },
+
+  {
+    title: "My Profile",
+    path: "/profile",
+    icon: <AiIcons.AiOutlineUser />,
+    cName: "nav-text",
+  },
 ];
 
 const userSidebarData = [

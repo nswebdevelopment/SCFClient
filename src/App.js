@@ -23,7 +23,15 @@ function App() {
     <Router>
       <Routes>
       <Route path="/" element={localStorage.getItem('accessToken') ? <Navigate to="/home" /> : <LoginPage />} />
-        <Route path="/home" element={<><Navbar /><HomePage /></>} />
+        <Route path="/home" element={<>
+        
+        <div>
+        <Navbar />
+        <HomePage />
+        </div>
+     
+        
+        </>} />
         <Route path="/projects" element={<><Navbar /><Projects /></>} />
         <Route path="/projects/:projectId" element={<><Navbar /><ParcelManager /></>} />
         <Route path="/requests" element={<><Navbar /><RequestManager /></>} />

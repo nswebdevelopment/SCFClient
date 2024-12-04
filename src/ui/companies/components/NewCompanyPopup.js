@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import Validator from "../../../utils/validator";
 
 function NewCompanyPopup({ addNewCompany, onClose }) {
   // name, phone, email, pib, address
@@ -7,15 +8,28 @@ function NewCompanyPopup({ addNewCompany, onClose }) {
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [pib, setPib] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
   const [address, setAddress] = useState("");
 
   const handleAddCompany = (event) => {
     event.preventDefault();
-    if (companyName && phone && email && pib && address) {
-      addNewCompany(companyName, phone, email, pib, address);
+    if (companyName && phone && email && contactPerson && address) {
+      if(!Validator.validateEmail(email))
+      {
+        alert("Email is not valid");
+        return
+      }
+
+      if(!Validator.validatePhoneNumber(phone))
+        {
+          alert("Phone number is not valid");
+          return
+        }
+
+      addNewCompany(companyName, phone, email, contactPerson, address);
     }
   };
+
 
   return (
     <div className="dialog">
@@ -35,7 +49,7 @@ function NewCompanyPopup({ addNewCompany, onClose }) {
           <label>
             Phone:
             <input
-              type="text"
+              type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -60,11 +74,11 @@ function NewCompanyPopup({ addNewCompany, onClose }) {
           </label>
 
           <label>
-            PIB:
+            Contact Person:
             <input
               type="text"
-              value={pib}
-              onChange={(e) => setPib(e.target.value)}
+              value={contactPerson}
+              onChange={(e) => setContactPerson(e.target.value)}
             />
           </label>
 

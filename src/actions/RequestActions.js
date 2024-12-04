@@ -15,7 +15,7 @@ function hideLoader() {
 }
 
 export const RequestActions = {
-    createRequest: (name, desc, parcelIds, parameterIds, serviceTypeId) => {
+    createRequest: (name, desc, parcelIds, parameterIds, serviceTypeId, instructions, desiredTimeline) => {
         Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
         api.createRequest(
             name,
@@ -23,6 +23,8 @@ export const RequestActions = {
             parcelIds,
             parameterIds,
             serviceTypeId,
+            instructions, 
+            desiredTimeline,
           (response) => {
             Dispatcher.dispatch({
               type: ActionTypes.CREATE_REQUEST,

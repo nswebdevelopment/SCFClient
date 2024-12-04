@@ -3,7 +3,7 @@
 
 .navbar {
     background-color: #02836180;
-    height: 80px;
+    height: 10vh;
     display: flex;
     justify-content: start;
     align-items: center;

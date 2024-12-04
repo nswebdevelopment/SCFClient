@@ -2,16 +2,21 @@ import { useNavigate } from "react-router-dom";
 import React, { useReducer, useEffect, useState } from "react";
 import "./RequestManager.css";
 
-
 import RequestStore from "../../stores/RequestStore";
-import  AppStore from '../../stores/AppStore';
+import AppStore from "../../stores/AppStore";
 import { RequestActions } from "../../actions/RequestActions";
 import FullScreenLoader from "../../components/loader/Loader";
 
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
-
-import {  requestManagerReducer, initialState, setRequests, setShowPopup, setLoader, setShowRequestPopup  } from "../../reducers/requestManagerReducer";
+import {
+  requestManagerReducer,
+  initialState,
+  setRequests,
+  setShowPopup,
+  setLoader,
+  setShowRequestPopup,
+} from "../../reducers/requestManagerReducer";
 import SCFRequestStatusPopup from "../../components/popups/SCFRequestStatus";
 // import { set } from "react-hook-form";
 import appStore from "../../stores/AppStore";
@@ -25,7 +30,7 @@ function RequestManager() {
   initialState.showPopup = data;
   const [state, dispatch] = useReducer(requestManagerReducer, initialState);
   const [request, setRequest] = React.useState(null);
-  
+
   useEffect(() => {
     window.onbeforeunload = () => {
       if (data) {
@@ -38,12 +43,10 @@ function RequestManager() {
     // eslint-disable-next-line
   }, []);
 
-  
-
   // const nextProjectId = state.requests.length + 1;
   const handleClose = () => {
-    dispatch(setShowPopup(false))
-    dispatch(setShowRequestPopup(false))
+    dispatch(setShowPopup(false));
+    dispatch(setShowRequestPopup(false));
   };
 
   const updateRequests = () => {
@@ -56,7 +59,6 @@ function RequestManager() {
     // handleFilter('');
   };
 
-
   const requestAdded = (project) => {
     updateRequests();
     // navigate(`/projects/${project.id}`, {
@@ -68,7 +70,6 @@ function RequestManager() {
     console.log("RequestManager statusChanged");
     // RequestActions.fetchRequests();
     updateRequests();
-
   };
 
   const showLoader = () => {
@@ -94,7 +95,7 @@ function RequestManager() {
 
   const handleSendRequest = () => {
     handleClose();
-  }
+  };
 
   // const handleShowPopup = () => {
   //   dispatch(setShowPopup(true));
@@ -105,23 +106,24 @@ function RequestManager() {
   // };
 
   const onError = (error) => {
-    alert("Error: " + error);  
-  }
+    alert("Error: " + error);
+  };
 
-
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState("");
   const [filteredItems, setFilteredItems] = useState(state.requests);
 
-    // Filter items based on the category
-    const handleFilter = (category) => {
-      setFilterCategory(category);
-      if (category === '') {
-        setFilteredItems(state.requests); // Show all items if no category is selected
-      } else {
-        const filtered = state.requests.filter(item => item.status === category);
-        setFilteredItems(filtered);
-      }
-    };
+  // Filter items based on the category
+  const handleFilter = (category) => {
+    setFilterCategory(category);
+    if (category === "") {
+      setFilteredItems(state.requests); // Show all items if no category is selected
+    } else {
+      const filtered = state.requests.filter(
+        (item) => item.status === category
+      );
+      setFilteredItems(filtered);
+    }
+  };
 
   useEffect(() => {
     RequestStore.on("change", updateRequests);
@@ -144,97 +146,97 @@ function RequestManager() {
   }, []);
 
   return (
-   
-<div>
-<div>
-      {state.loader ? <FullScreenLoader /> : null}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Request</th>
-            <th>Service Type</th>
-            <th>
-  
-              <div>
-        <label htmlFor="statusFilter">Status: </label>
-        <select
-          id="categorstatusFilterFilter"
-          value={filterCategory}
-          onChange={(e) => handleFilter(e.target.value)}
-        >
-          <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="FINISHED">Finished</option>
-        </select>
+    <div>
+      <div>
+        {state.loader ? <FullScreenLoader /> : null}
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Request</th>
+              <th>Specific Instructions</th>
+              <th>
+                <div>
+                  <label htmlFor="statusFilter">Status: </label>
+                  <select
+                    id="categorstatusFilterFilter"
+                    value={filterCategory}
+                    onChange={(e) => handleFilter(e.target.value)}
+                  >
+                    <option value="">All</option>
+                    <option value="Received">Received</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Quoted">Quoted</option>
+                  </select>
+                </div>
+              </th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.map((request) => (
+              <tr key={request.id}>
+                <td>{request.id}</td>
+                <td>
+                  <div>
+                    <h3>{request.name}</h3>
+
+                    <div class="field">
+                      <span class="label">Service Type:</span>
+                      <p class="service-type">{request.serviceType}</p>
+                    </div>
+                    <div class="field">
+                      <span class="label">Description:</span>
+                      <p class="description">{request.description}</p>
+                    </div>
+
+                    <div class="field">
+                      <span class="label">Desired Timeline:</span>
+                      <p class="description">{request.desiredTimeline}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>{request.instructions}</td>
+                <td>{request.status}</td>
+                {/* <td>{request.pib}</td> */}
+                <td>
+                  <button
+                    onClick={(event) => {
+                      navigate(`/requests/${request.id}`, {
+                        //  state: { data: request },
+                      });
+                    }}
+                  >
+                    Details
+                  </button>
+
+                  {appStore.isSuperAdmin() ? (
+                    <button
+                      className={"red"}
+                      onClick={(event) => {
+                        handleStatusChanged(event, request);
+                      }}
+                    >
+                      Change Status
+                    </button>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredItems.map((request) => (
-            <tr key={request.id}>
-              <td>{request.id}</td>
-              <td>
-                <div>
-                <h3>{request.name}</h3>
-                {request.description}
-                </div>
-              </td>
-              <td>{request.serviceType}</td>
-              <td>{request.status}</td>
-              {/* <td>{request.pib}</td> */}
-              <td>
-                <button
-                  onClick={(event) => {
-                            navigate(`/requests/${request.id}`, {
-                            //  state: { data: request },
-                              });
-                  }}
-                >
-                  Details
-                </button>
-
-                    {
-                      appStore.isSuperAdmin() ? (
-                        <button
-                        className={"red"}
-                        onClick={(event) => {
-                          handleStatusChanged(event, request);
-                        }}
-                      >
-                        Change Status
-                      </button>
-                      ): null
-                    } 
-
-              </td>
-          
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {state.showRequestPopup ? (
+        <SCFRequestStatusPopup
+          requestName={request.name}
+          requestId={request.id}
+          currentStatus={request.status}
+          sendRequest={handleSendRequest}
+          onClose={handleClose}
+        />
+      ) : null}
     </div>
-
-     {
-        state.showRequestPopup ? (
-          <SCFRequestStatusPopup
-            requestId={request.id}
-            currentStatus={request.status}
-            sendRequest={handleSendRequest}
-            onClose={handleClose}
-          />
-      ) : (null)}
-
-</div>
-
-
-
-
   );
 }
 export default RequestManager;

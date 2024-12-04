@@ -38,3 +38,23 @@
   .newProject:hover {
     background-color: var(--secondary);
   }
+
+
+.field {
+    display: flex; /* Align label and value horizontally */
+    align-items: center;
+    margin: 8px 0;
+}
+
+.label {
+    font-weight: bold;
+    margin-right: 5px; /* Space between label and value */
+    color: #333;
+    text-align: right; /* Align label text to the right */
+}
+
+.service-type,
+.description {
+    margin: 0; /* Reset default margins */
+    color: #555; /* Optional: text color */
+}

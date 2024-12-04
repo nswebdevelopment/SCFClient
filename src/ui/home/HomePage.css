@@ -1,34 +1,66 @@
 @import '../../styles/Color.css';
 
+
+
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--light);
-  color: var(--dark);
 }
-header {
-    color: var(--dark);
-  padding: 20px 0;
-  text-align: center;
+
+.homeBody
+{
+  background-image: url('../../assets/homepage_background.jpg');
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Distributes content between header, main, and footer */
+  height: 90vh;
+
 }
+
 main {
   padding: 20px;
   max-width: 800px;
   margin: auto;
+  flex: 1; /* Ensures the main section takes the available space */
+  overflow: auto; /* Optional: Allows content to scroll within the main section if it overflows */
+  padding: 1rem;
 }
+
+
 section {
   background: white;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+
+
 footer {
+  color: white;
+  text-align: center;
+  padding: 20px;
+  background-color: var(--primary);
+}
+
+
+ /* footer {
   text-align: center;
   padding: 20px;
   background-color: var(--primary);
   color: white;
+} */
+
+ header {
+  color: var(--dark);
+  padding: 20px 0;
+  text-align: center;
 }
+
+
 a {
   color: var(--info);
   text-decoration: none;
@@ -36,3 +68,12 @@ a {
 a:hover {
   text-decoration: underline;
 }
+h1{
+  color: white;
+}
+
+
+.white-text {
+    color: white;
+}
+

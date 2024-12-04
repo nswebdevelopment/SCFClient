@@ -6,6 +6,7 @@ export const ActionTypes = {
   ADD_COMPANY: "ADD_COMPANY",
   ADD_COMPANY_ADMIN: "ADD_COMPANY_ADMIN",
   REMOVE_COMPANY: "REMOVE_COMPANY",
+  REMOVE_USER: "REMOVE_USER",
   SHOW_LOADER: "SHOW_LOADER",
   HIDE_LOADER: "HIDE_LOADER",
   ERROR: "ERROR",
@@ -97,4 +98,26 @@ export const CompanyActions = {
       });
     });
   },
+
+
+  removeUser: (user) => {
+    Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
+    api.removeUser(user.personId,(response)=>{
+      Dispatcher.dispatch({
+        type: ActionTypes.REMOVE_USER,
+        payload: response,
+      });
+      hideLoader();
+    }, (error)=>{
+      hideLoader();
+      console.log("Error:", error.message);
+      Dispatcher.dispatch({
+        type: ActionTypes.ERROR,
+        payload: error,
+      });
+    });
+  },
 };
+
+
+

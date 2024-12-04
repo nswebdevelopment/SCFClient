@@ -294,22 +294,40 @@ function ApiManager() {
   }
 
 
+  async function removeUser(userId, onResponse, onError) {
+    return api
+      .delete("/api/Account/" + userId)
+      .then((response) => {
+        handleResponse(response, onResponse, onError);
+      })
+      .catch((error) => {
+          handleError(error, onError);
+      });
+  }
+
+
 
 //COMPANIES END
 
 
 
 //REQUESTS START
-function createRequest(name, desc, parcelIds, parameterIds, serviceTypeId, onResponse, onError) {
+function createRequest(name, desc, parcelIds, parameterIds, serviceTypeId, instructions, desiredDate, onResponse, onError) {
 
+const body = {
+  name: name,
+  description: desc,
+  parcelIds: parcelIds,
+  parameterIds: parameterIds,
+  serviceTypeId: serviceTypeId,
+  instructions: instructions,
+  desiredTimeline: desiredDate
+}
+
+console.log(body)
+  
   return api
-    .post("/api/ParcelRequest", {
-      name: name,
-      description: desc,
-      parcelIds: parcelIds,
-      parameterIds: parameterIds,
-      serviceTypeId: serviceTypeId,
-    })
+    .post("/api/ParcelRequest", body)
     .then((response) => {
       handleResponse(response, onResponse, onError);
     })
@@ -370,6 +388,7 @@ function changeStatus(requestId, status, onResponse, onError) {
     fetchCompanies,
     addCompany,
     removeCompany,
+    removeUser,
     addCompanyAdmin,
     createRequest,
     fetchRequests,

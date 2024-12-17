@@ -171,7 +171,7 @@ function ApiManager() {
       });
   }
 
-  function updateParcel(parcel, onResponse, onError) {
+  function updateParcel(parcel, isProjectView,  onResponse, onError) {
     const coords = JSON.parse(parcel.coordinates);
     const coordinates = coords.map((coord) => {
       return [coord.lng, coord.lat];
@@ -186,7 +186,7 @@ function ApiManager() {
     console.log("shapeType", parcel.shapeType);
 
     return api
-      .put("/api/Parcel/", {
+      .put(isProjectView ? "/api/Parcel/" : "/api/ParcelRequest/parcel", {
         id: parcel.id,
         name: parcel.name,
         description: parcel.description,

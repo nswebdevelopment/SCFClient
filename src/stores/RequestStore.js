@@ -38,9 +38,10 @@ class RequestStore extends EventEmitter {
         this.emit("change");
       break;
 
-      case ActionTypes.ADD_REQUEST:
-        this.projects.push(action.payload);
-        this.emit("project_added", action.payload);
+      case ActionTypes.CREATE_REQUEST:
+        // this.projects.push(action.payload);
+        console.log("request_added")
+        this.emit("request_added", action.payload);
         break;
 
       // case ActionTypes.REMOVE_PROJECT:

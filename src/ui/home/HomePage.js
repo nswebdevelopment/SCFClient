@@ -2,17 +2,20 @@ import React, { useEffect } from "react";
 import "./HomePage.css";
 import { useNavigate } from "react-router-dom";
 import appStore from "../../stores/AppStore";
-import "../../components/popups/WelcomePopup"
-import WelcomePopup from "../../components/popups/WelcomePopup";
+import "../../components/popups/MessagePopup"
+import MessagePopup from "../../components/popups/MessagePopup";
 
 function HomePage() {
   const navigate = useNavigate();
 
-  const [showPopup, setShowPopup] = React.useState(true);
+  const [showPopup, setShowPopup] = React.useState(!localStorage.getItem("hasSeenWelcomePopup"));
 
   const handleOutsideClick = (event) => {
       setShowPopup(false); // Hide the popup
+      localStorage.setItem("hasSeenWelcomePopup", "true"); // Set the flag
+      console.log(localStorage.getItem("hasSeenWelcomePopup"))
   };
+
 
 
   useEffect(() => {
@@ -20,6 +23,7 @@ function HomePage() {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
+     
     };
   }, []);
 
@@ -66,7 +70,7 @@ function HomePage() {
 
               {
         showPopup ? (
-          <WelcomePopup/>
+          MessagePopup(`Welcome back, ${localStorage.getItem('user_name')}!`, "Ready to unlock new soil insights? Draw your fields and get a personalized soil analytics quote today.")
       ) : (null)}
 
             </div>

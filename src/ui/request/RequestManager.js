@@ -170,6 +170,7 @@ function RequestManager() {
                   </select>
                 </div>
               </th>
+              <th>Created</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -199,6 +200,7 @@ function RequestManager() {
                 <td>{request.instructions}</td>
                 <td>{request.status}</td>
                 {/* <td>{request.pib}</td> */}
+                <td>{request.createdAt}</td>
                 <td>
                   <button
                     onClick={(event) => {

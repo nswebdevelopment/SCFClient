@@ -38,11 +38,11 @@ function hideLoader() {
 }
 
 
-function updateParcel(parcel)
+function updateParcel(parcel, isProjectView)
 {
   // Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
   console.log("UPDATE PARCEL: " + parcel.imageUrl)
-  api.updateParcel(parcel, 
+  api.updateParcel(parcel, isProjectView,
       (response)=>{
       parcel.shape.setMap(null);
       hideLoader();
@@ -59,7 +59,7 @@ function updateParcel(parcel)
   );
 }
 
-function updateLandTypeCover(parcel) {
+function updateLandTypeCover(parcel, isProjectView) {
   const types = parcel.coverTypes
 
   const coords = JSON.parse(parcel.coordinates);
@@ -83,13 +83,7 @@ function updateLandTypeCover(parcel) {
       parcel.urlFormat = data["urlFormat"];
       console.log(parcel.urlFormat)
 
-      updateParcel(parcel)
-      // Dispatcher.dispatch(
-      //   {
-      //     type: ActionTypes.UPDATE_PARCEL_URL,
-      //     payload: parcel
-      //   }
-      // )
+      updateParcel(parcel, isProjectView)
     });
 }
 
@@ -157,8 +151,8 @@ export const ParcelActions = {
     });
   },
 
-  updateParcel: (parcel) => {
-    updateParcel(parcel)
+  updateParcel: (parcel, isProjectView) => {
+    updateParcel(parcel, isProjectView)
   },
 
   removeParcel: (parcel) => {
@@ -215,7 +209,7 @@ export const ParcelActions = {
     });
   },
 
-  updateParcelLandCover: (parcel, vertices, types)=>{
+  updateParcelLandCover: (parcel, vertices, types, isProjectView)=>{
     Dispatcher.dispatch({ type: ActionTypes.SHOW_LOADER });
     ParcelActions.getLandCover(vertices, types)
     .then((data) => {
@@ -229,7 +223,7 @@ export const ParcelActions = {
       
       parcel.coordinates = JSON.stringify(MapUtils.getVertices(parcel.shape));
 
-    ParcelActions.updateParcel(parcel);
+    ParcelActions.updateParcel(parcel, isProjectView);
 
     });
 
@@ -305,27 +299,31 @@ export const ParcelActions = {
     return;
   },
 
-  checkParcelUrl: (parcel) => {
+  checkParcelUrl: (parcel, isProjectView) => {
 
     const formatUrl = parcel.imageUrl
     .replace("{z}", 0)
     .replace("{x}", 0)
     .replace("{y}", 0);
 
-    fetch(formatUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },  
-    })
-    .then((response) => 
-{
 
-    if(response.status !== 200)
-      {
-        updateLandTypeCover(parcel)
+
+      fetch(formatUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },  
+      })
+      .then((response) => 
+  {
+  
+      if(response.status !== 200)
+        {
+          updateLandTypeCover(parcel, isProjectView)
+        }
       }
-    }
-  )
+    )
+    
+
   },    
 };

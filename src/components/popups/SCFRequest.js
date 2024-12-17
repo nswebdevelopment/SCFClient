@@ -97,7 +97,7 @@ function SCFRequestPopup({ projects, parcels, sendRequest, onClose }) {
     }
   };
 
-
+ 
   const setParameter = (checked, param) => {
    if(checked){
     setSelectedParameters((prevTypes) => [...prevTypes, param]);

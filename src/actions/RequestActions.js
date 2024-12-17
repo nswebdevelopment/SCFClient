@@ -24,7 +24,7 @@ export const RequestActions = {
             parameterIds,
             serviceTypeId,
             instructions, 
-            desiredTimeline,
+            desiredTimeline === "" ? null : desiredTimeline,
           (response) => {
             Dispatcher.dispatch({
               type: ActionTypes.CREATE_REQUEST,

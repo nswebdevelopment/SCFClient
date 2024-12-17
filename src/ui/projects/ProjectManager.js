@@ -4,6 +4,7 @@ import "./ProjectManager.css";
 import NewProjectPopup from "./components/NewProjectPopup";
 
 import ProjectStore from "../../stores/ProjectStore";
+import RequestStore from "../../stores/RequestStore"
 import  AppStore from '../../stores/AppStore';
 import { ProjectActions } from "../../actions/ProjectActions";
 import FullScreenLoader from "../../components/loader/Loader";
@@ -13,6 +14,7 @@ import { useLocation } from 'react-router-dom';
 
 import {  projectManagerReducer, initialState, setProjects, setShowPopup, setLoader, setShowRequestPopup  } from "../../reducers/projectManagerReducer";
 import SCFRequestPopup from "../../components/popups/SCFRequest";
+import MessagePopup from "../../components/popups/MessagePopup";
 
 function ProjectManager() {
   const navigate = useNavigate();
@@ -23,7 +25,9 @@ function ProjectManager() {
   initialState.showPopup = data;
   const [state, dispatch] = useReducer(projectManagerReducer, initialState);
 
-  
+  const [showMessage, setShowMessage] = React.useState(false);
+  const [popupMessage, setPopupMessage] = React.useState("");
+
   useEffect(() => {
     window.onbeforeunload = () => {
       if (data) {
@@ -35,6 +39,20 @@ function ProjectManager() {
     };
     // eslint-disable-next-line
   }, []);
+
+
+  useEffect(() => {
+    // Attach event listener to detect clicks outside the popup
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+     
+    };
+  }, []);
+
+  const handleOutsideClick = (event) => {
+    setShowMessage(false); // Hide the popup
+};
 
   
 
@@ -56,6 +74,11 @@ function ProjectManager() {
     navigate(`/projects/${project.id}`, {
       state: { data: project },
     });
+  };
+
+  const requestAdded = (request) => {
+    setPopupMessage(`Your request ${request.name} has been sent`)
+    setShowMessage(true);
   };
 
   const showLoader = () => {
@@ -104,6 +127,7 @@ function ProjectManager() {
   useEffect(() => {
     ProjectStore.on("change", updateProjects);
     ProjectStore.on("project_added", projectAdded);
+    RequestStore.on("request_added", requestAdded);
     AppStore.on("showLoader", showLoader);
     AppStore.on("hideLoader", hideLoader);
     AppStore.on("error", onError);
@@ -112,6 +136,7 @@ function ProjectManager() {
     return () => {
       ProjectStore.removeListener("change", updateProjects);
       ProjectStore.removeListener("project_added", projectAdded);
+      RequestStore.removeListener("request_added", requestAdded)
       AppStore.removeListener("showLoader", showLoader);
       AppStore.removeListener("hideLoader", hideLoader);
       AppStore.removeListener("error", onError);
@@ -169,6 +194,12 @@ function ProjectManager() {
             onClose={handleClose}
           />
       ) : (null)}
+
+{       showMessage ? (
+          MessagePopup("Successfully sent", `${popupMessage}`)
+      ) : (null)}
+
+      
 
       <button onClick={handleShowRequestPopup}>
         Send Request

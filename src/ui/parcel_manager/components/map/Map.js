@@ -12,6 +12,9 @@ import CustomDrawingManager from "./drawing_manager/CustomDrawingManager";
 import ParcelStore from "../../../../stores/ParcelStore";
 import AppStore from "../../../../stores/AppStore";
 
+import MessagePopup from "../../../../components/popups/MessagePopup";
+import RequestStore from "../../../../stores/RequestStore"
+
 
 import { ParcelActions } from "../../../../actions/ParcelActions";
 import {
@@ -41,6 +44,24 @@ function Map() {
   const [state, dispatch] = useReducer(mapReducer, initialState);
   const { openExportModal } = useExportModal();
   const [isProjectView, setIsProjectView] = React.useState(false);
+
+  const [showMessage, setShowMessage] = React.useState(false);
+  const [popupMessage, setPopupMessage] = React.useState("");
+
+
+  useEffect(() => {
+    // Attach event listener to detect clicks outside the popup
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+     
+    };
+  }, []);
+
+  const handleOutsideClick = (event) => {
+    setShowMessage(false); // Hide the popup
+};
+
 
   function onMapLoaded(googleMap) {
     googleMap.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
@@ -96,6 +117,9 @@ function Map() {
 
     if(fitBounds)
     state.map.fitBounds(bounds);
+  else{
+    MapUtils.centerToCurrentLocation(state.map);
+  }
   };
 
   const handleSendRequest = () => {
@@ -104,6 +128,13 @@ function Map() {
 
   const handleClose = () => {
     dispatch(setShowSCFRequest(false))
+  };
+
+
+  const requestAdded = (request) => {
+    console.log("request sent")
+    setPopupMessage(`Your request ${request.name} has been sent`)
+    setShowMessage(true);
   };
 
   //Handle the "Parcel Removed" event
@@ -118,11 +149,14 @@ function Map() {
 
     const shape = selected.shape;
     const bounds = MapUtils.getBoundsOfShape(shape);
+    const mapBounds = new window.google.maps.LatLngBounds();
+
     //Save the initial state of the shape
     dispatch(setInitialPolygonState(MapUtils.getShape(shape)));
 
     // map.zoom = 13;
     state.map.panTo(bounds.getCenter());
+
 
     ParcelStore.getProjectParcels().forEach((parcel) => {
       const isCurrentParcel = parcel.id === selected.id;
@@ -132,7 +166,23 @@ function Map() {
         strokeColor: "white",
       });
       parcel.shape.setEditable(isCurrentParcel);
+
+      if (parcel.shape.getBounds) {
+        const b = parcel.shape.getBounds();
+        mapBounds.extend(b.getNorthEast());
+        mapBounds.extend(b.getSouthWest());
+        mapBounds.extend(b.getNorthEast());
+        mapBounds.extend(b.getSouthWest());
+      } else if (parcel.shape.getPath) {
+        const path = parcel.shape.getPath().getArray();
+        path.forEach(point => {
+          mapBounds.extend(point);
+        });
+      }
     });
+
+      state.map.fitBounds(mapBounds);
+
   };
 
   const openEditModal = () => {
@@ -149,16 +199,17 @@ function Map() {
         if (parcel) {
           if (
             parcel.selectedTypes.length > 0 &&
-            parcel.selectedTypes !== selectedParcel.coverTypes
+            parcel.selectedTypes !== selectedParcel.coverTypes 
           ) {
             const vertices = MapUtils.getVertices(selectedParcel.shape);
             ParcelActions.updateParcelLandCover(
               selectedParcel,
               vertices,
-              parcel.selectedTypes
+              parcel.selectedTypes,
+              isProjectView
             );
           } else {
-            ParcelActions.updateParcel(selectedParcel);
+            ParcelActions.updateParcel(selectedParcel, isProjectView);
           }
         }
       },
@@ -191,7 +242,7 @@ function Map() {
     // Add a new function to add overlays for the parcel
 
     // ParcelActions.checkParcelUrl(parcel.imageUrl)
-    ParcelActions.checkParcelUrl(parcel)
+    ParcelActions.checkParcelUrl(parcel, isProjectView)
 
     MapUtils.addOverlaysForParcel(parcel, state.map);
   }
@@ -208,7 +259,9 @@ function Map() {
     dispatch(
       setPlacesService(new window.google.maps.places.PlacesService(state.map))
     );
-    MapUtils.centerToCurrentLocation(state.map);
+    
+    
+    // MapUtils.centerToCurrentLocation(state.map);
 
     ParcelStore.on("parcelsFetched", parcelsFetched);
     ParcelStore.on("parcelRemoved", parcelRemoved);
@@ -219,6 +272,7 @@ function Map() {
     AppStore.on("error", onError);
     AppStore.on("showLoader", showLoader);
     AppStore.on("hideLoader", hideLoader);
+    RequestStore.on("request_added", requestAdded);
 
     // Cleanup
     return () => {
@@ -231,6 +285,7 @@ function Map() {
       AppStore.removeListener("error", onError);
       AppStore.removeListener("showLoader", showLoader);
       AppStore.removeListener("hideLoader", hideLoader);
+      RequestStore.removeListener("request_added", requestAdded)
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.mapLoaded]);
@@ -290,11 +345,14 @@ function Map() {
   function handleShapeChangeSave() {
     const selectedParcel = ParcelStore.getSelectedParcel();
     const vertices = MapUtils.getVertices(selectedParcel.shape);
-    ParcelActions.updateParcelLandCover(
-      selectedParcel,
-      vertices,
-      selectedParcel.coverTypes
-    );
+
+      ParcelActions.updateParcelLandCover(
+        selectedParcel,
+        vertices,
+        selectedParcel.coverTypes
+        , isProjectView
+      );
+    
 
     dispatch(setInfoWindow(false));
   }
@@ -432,6 +490,10 @@ function Map() {
           //   sendRequest={ dispatch(setShowSCFRequest(false))}
           //   onClose={ dispatch(setShowSCFRequest(false))}
           // />
+      ) : (null)}
+
+{       showMessage ? (
+          MessagePopup("Successfully sent", `${popupMessage}`)
       ) : (null)}
 
 
